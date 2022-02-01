@@ -1,8 +1,10 @@
 import 'package:audioplayers/audioplayers.dart';
 import "package:flutter/material.dart";
-import 'package:music_palyer/list_page.dart';
+import 'package:music_palyer/screen/list_page.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
-import 'package:music_palyer/music_model.dart';
+import 'package:music_palyer/model/music_model.dart';
+
+import 'model/music_model.dart';
 
 void main() => runApp(MyApp());
 

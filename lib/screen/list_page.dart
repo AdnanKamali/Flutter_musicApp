@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:music_palyer/custom_button_widget.dart';
-import 'package:music_palyer/music_model.dart';
+import 'package:music_palyer/screen/detail_page.dart';
+import 'package:music_palyer/widget/custom_button_widget.dart';
+import 'package:music_palyer/model/music_model.dart';
 import 'package:music_palyer/my_colors.dart';
+import 'package:music_palyer/widget/list_of_song.dart';
 
-import 'widget/list_of_song.dart';
+import '../widget/list_of_song.dart';
 
 class ListPage extends StatefulWidget {
   final List<MusicModle> musics;
@@ -13,9 +15,9 @@ class ListPage extends StatefulWidget {
   _ListPageState createState() => _ListPageState();
 }
 
-bool isFavorit = false;
-
 class _ListPageState extends State<ListPage> {
+  bool isFavorit = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,10 +55,24 @@ class _ListPageState extends State<ListPage> {
                         ),
                       ),
                     ),
-                    CustomButtonWidget(
-                      size: 150,
-                      borderWidth: 5,
-                      image: "asset/image/flower.jpg",
+                    InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (c) => DetailPage(
+                              modle: widget.musics[0],
+                            ),
+                          ),
+                        ); // use true value
+                      },
+                      child: const Hero(
+                        tag: "ImageTag",
+                        child: CustomButtonWidget(
+                          size: 150,
+                          borderWidth: 5,
+                          image: "asset/image/flower.jpg",
+                        ),
+                      ),
                     ),
                     CustomButtonWidget(
                       child: IconButton(
