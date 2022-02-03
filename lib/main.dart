@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:bloc/bloc.dart';
 import "package:flutter/material.dart";
 import 'package:music_palyer/screen/list_page.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
@@ -47,6 +48,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       isLoadSong = true;
     });
+    print(musics);
   }
 
   // int result = 0;
@@ -56,7 +58,16 @@ class _MyAppState extends State<MyApp> {
       title: "Music Player",
       home: isLoadSong
           ? ListPage(
-              musics: musics,
+              musics: musics.isEmpty
+                  ? ([
+                      MusicModle(
+                          artist: "Not Found",
+                          id: "Not Found",
+                          duration: 0,
+                          path: "",
+                          title: "Not Found"),
+                    ])
+                  : musics,
             )
           : const Scaffold(body: Center(child: CircularProgressIndicator())),
     );
