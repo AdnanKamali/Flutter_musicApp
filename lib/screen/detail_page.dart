@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_event.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
-import 'package:music_palyer/model/music_model.dart';
+import 'package:music_palyer/bloc/music_model.dart';
 import 'package:music_palyer/my_colors.dart';
 import 'package:music_palyer/widget/custom_button_widget.dart';
 import 'package:pausable_timer/pausable_timer.dart';
@@ -15,7 +15,7 @@ import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class DetailPage extends StatefulWidget {
-  final MusicModle modle;
+  final MusicModleState modle;
   const DetailPage({Key? key, required this.modle}) : super(key: key);
 
   @override
@@ -126,8 +126,11 @@ class _DetailPageState extends State<DetailPage>
                     setState(() {
                       _timer = state;
                     });
+                    if (state == (widget.modle.duration ~/ 1000) - 1) {
+                      bloc.add(SkipNextMusic(widget.modle.id));
+                    }
                   },
-                  builder: (context, state) => Text("${state}"),
+                  builder: (context, state) => Text("$state"),
                   // listener: (context, state) => print(state),
                 )),
               ],
@@ -172,8 +175,34 @@ class _DetailPageState extends State<DetailPage>
                     isOnPressed: true,
                     size: 80,
                     child: IconButton(
-                      onPressed: () {
-                        timerCubit.cancelTimer(50);
+                      onPressed: () async {
+                        if (!isPlaying) {
+                          timerCubit.startTimer(widget.modle.duration ~/ 1000);
+                          if (_audioPlayer.state == PlayerState.PAUSED) {
+                            await Future.delayed(
+                                const Duration(milliseconds: 500));
+                            // becuse timer have lag
+                          } else if (_audioPlayer.state ==
+                              PlayerState.STOPPED) {
+                            print("Stopp");
+                          }
+                          _audioPlayer.play(widget.modle.path);
+                          setState(() {
+                            isPlaying = true;
+                          });
+                        } else {
+                          if (_audioPlayer.state == PlayerState.PLAYING) {
+                            _audioPlayer.pause();
+                            timerCubit.seekTime(_timer + 1);
+                            timerCubit.cancelTimer(_timer + 1);
+                            setState(() {
+                              isPlaying = false;
+                            });
+                          } else if (_audioPlayer.state ==
+                              PlayerState.STOPPED) {
+                            print("Stopp");
+                          }
+                        }
                       },
                       icon: AnimatedIcon(
                         progress: _controller,
@@ -185,9 +214,7 @@ class _DetailPageState extends State<DetailPage>
                   CustomButtonWidget(
                     size: 80,
                     child: IconButton(
-                      onPressed: () {
-                        timerCubit.startTimer(180);
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.skip_next),
                     ),
                   ),

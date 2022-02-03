@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 
 class TimerCubit extends Cubit<int> {
@@ -9,6 +8,7 @@ class TimerCubit extends Cubit<int> {
     const oneSec = Duration(seconds: 1);
     return Timer.periodic(oneSec, (timer) {
       if (myTime == time) {
+        timer.cancel();
         myTime = 0;
         emit(myTime);
       } else {
@@ -28,7 +28,6 @@ class TimerCubit extends Cubit<int> {
   }
 
   void startTimer(int second) {
-    print("Start Timer");
     _timer = timer(second);
   }
 }

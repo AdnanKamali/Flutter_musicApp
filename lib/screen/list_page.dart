@@ -4,14 +4,14 @@ import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
 import 'package:music_palyer/screen/detail_page.dart';
 import 'package:music_palyer/widget/custom_button_widget.dart';
-import 'package:music_palyer/model/music_model.dart';
+import 'package:music_palyer/bloc/music_model.dart';
 import 'package:music_palyer/my_colors.dart';
 import 'package:music_palyer/widget/list_of_song.dart';
 
 import '../widget/list_of_song.dart';
 
 class ListPage extends StatefulWidget {
-  final List<MusicModle> musics;
+  final List<MusicModleState> musics;
   const ListPage({Key? key, required this.musics}) : super(key: key);
 
   @override
@@ -66,7 +66,7 @@ class _ListPageState extends State<ListPage> {
                               MaterialPageRoute(
                                 builder: (c) => MultiBlocProvider(
                                     providers: [
-                                      BlocProvider(create: (c) => BlocMusic()),
+                                      // BlocProvider(create: (c) => BlocMusic()),
                                       BlocProvider(create: (c) => TimerCubit())
                                     ],
                                     child: DetailPage(

@@ -1,13 +1,18 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import "package:flutter/material.dart";
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/screen/list_page.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
-import 'package:music_palyer/model/music_model.dart';
+import 'package:music_palyer/bloc/music_model.dart';
 
-import 'model/music_model.dart';
+import 'bloc/music_model.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(BlocProvider<BlocMusic>(
+      create: (context) => BlocMusic(),
+      child: MyApp(),
+    ));
 
 class MyApp extends StatefulWidget {
   @override
@@ -18,14 +23,16 @@ class _MyAppState extends State<MyApp> {
   final FlutterAudioQuery audioQuery = FlutterAudioQuery();
 
   late AudioPlayer audioPlayer;
+  late BlocMusic provider;
   @override
   void initState() {
     super.initState();
+    provider = BlocProvider.of<BlocMusic>(context);
     artistInfo();
     audioPlayer = AudioPlayer();
   }
 
-  List<MusicModle> musics = [];
+  List<MusicModleState> musics = [];
   bool isLoadSong = false;
   void artistInfo() async {
     final songs = await audioQuery.getSongs();
@@ -33,7 +40,7 @@ class _MyAppState extends State<MyApp> {
       if (element.id != null &&
           element.title != null &&
           element.duration != null) {
-        final music = MusicModle(
+        final music = MusicModleState(
           artist: element.artist,
           id: element.id,
           path: element.filePath,
@@ -48,7 +55,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       isLoadSong = true;
     });
-    print(musics);
+    provider.getListOfMusicModleState(musics);
   }
 
   // int result = 0;
@@ -60,7 +67,7 @@ class _MyAppState extends State<MyApp> {
           ? ListPage(
               musics: musics.isEmpty
                   ? ([
-                      MusicModle(
+                      MusicModleState(
                           artist: "Not Found",
                           id: "Not Found",
                           duration: 0,
