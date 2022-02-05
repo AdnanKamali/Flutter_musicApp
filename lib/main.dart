@@ -3,14 +3,18 @@ import 'package:bloc/bloc.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
+import 'package:music_palyer/cubit/timer_cubit.dart';
 import 'package:music_palyer/screen/list_page.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:music_palyer/bloc/music_model.dart';
 
 import 'bloc/music_model.dart';
 
-void main() => runApp(BlocProvider<BlocMusic>(
-      create: (context) => BlocMusic(),
+void main() => runApp(MultiBlocProvider(
+      providers: [
+        BlocProvider<TimerCubit>(create: (ctx) => TimerCubit()),
+        BlocProvider<BlocMusic>(create: (ctx) => BlocMusic()),
+      ],
       child: MyApp(),
     ));
 

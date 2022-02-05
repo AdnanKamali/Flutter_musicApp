@@ -13,12 +13,12 @@ class PauseMusic extends BlocEvent {
 
 class SkipNextMusic extends BlocEvent {
   final String nextMusicId;
-
-  SkipNextMusic(this.nextMusicId);
+  final String playerId;
+  SkipNextMusic(this.nextMusicId, this.playerId);
 }
 
 class SkipPreviousMusic extends BlocEvent {
   final String previousMusicId;
-
-  SkipPreviousMusic(this.previousMusicId);
+  final String playerId;
+  SkipPreviousMusic(this.previousMusicId, this.playerId);
 }
