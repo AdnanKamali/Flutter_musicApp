@@ -13,7 +13,7 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     return _modle;
   }
 
-  set nowPlaying(MusicModleState modleState) {
+  set nowPlayingSet(MusicModleState modleState) {
     nowPlayingMusic = modleState;
   }
 
@@ -40,6 +40,10 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     } else {
       return false;
     }
+  }
+
+  MusicModleState get currentPlay {
+    return nowPlayingMusic;
   }
 
   bool isStart(String id) {
