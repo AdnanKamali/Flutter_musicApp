@@ -62,10 +62,18 @@ class _ListPageState extends State<ListPage> {
                     InkWell(
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (c) => DetailPage(
-                                    modle: bloc.musics[0],
-                                  )),
+                          MaterialPageRoute(builder: (c) {
+                            MusicModleState modleState;
+                            if (bloc.isHaveCurrentPlay) {
+                              modleState = bloc.currentPlay;
+                            } else {
+                              modleState = bloc.musics[0];
+                              bloc.nowPlayingSet = modleState;
+                            }
+                            return DetailPage(
+                              modle: modleState,
+                            );
+                          }),
                         ); // use true value
                       },
                       child: const Hero(

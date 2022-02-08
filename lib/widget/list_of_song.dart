@@ -1,5 +1,7 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_palyer/bloc/bloc_event.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/screen/detail_page.dart';
 import 'package:music_palyer/screen/list_page.dart';
@@ -31,19 +33,20 @@ class _ListOfSongState extends State<ListOfSong>
 
   @override
   Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<BlocMusic>(context);
     return ListView.builder(
         physics: const BouncingScrollPhysics(),
-        itemCount: widget.widget.musics.length,
+        itemCount: bloc.musics.length,
         itemBuilder: (ctx, index) {
-          final _musicList = widget.widget.musics;
-          final _durationMiliseccond = _musicList[index].duration.round();
-          final _durationMinute = (_durationMiliseccond ~/ 60000);
-          final _durationSeccond =
-              (((_durationMiliseccond / 60000) - _durationMinute) * 60).round();
+          // final _musicList = widget.widget.musics;
+          // final _durationMiliseccond = _musicList[index].duration.round();
+          // final _durationMinute = (_durationMiliseccond ~/ 60000);
+          // final _durationSeccond =
+          //     (((_durationMiliseccond / 60000) - _durationMinute) * 60).round();
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             decoration: BoxDecoration(
-                color: _id == _musicList[index].id
+                color: _id == bloc.musics[index].id
                     ? AppColor.activeColor
                     : AppColor.mainColor,
                 borderRadius: BorderRadius.circular(20)),
@@ -52,9 +55,12 @@ class _ListOfSongState extends State<ListOfSong>
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (c) => DetailPage(
-                      modle: _musicList[index],
-                    ),
+                    builder: (c) {
+                      bloc.add(NewMusicPlay(bloc.musics[index].id));
+                      return DetailPage(
+                        modle: bloc.musics[index],
+                      );
+                    },
                   ),
                 );
               },
@@ -66,7 +72,7 @@ class _ListOfSongState extends State<ListOfSong>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _musicList[index].title,
+                        bloc.musics[index].title,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           color: AppColor.styleColor,
@@ -74,7 +80,7 @@ class _ListOfSongState extends State<ListOfSong>
                         ),
                       ),
                       Text(
-                        _musicList[index].artist,
+                        bloc.musics[index].artist,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           color: AppColor.styleColor,
@@ -91,13 +97,13 @@ class _ListOfSongState extends State<ListOfSong>
                     ],
                   ),
                   CustomButtonWidget(
-                    isOnPressed: _id == _musicList[index].id,
+                    isOnPressed: _id == bloc.musics[index].id,
                     child: IconButton(
-                      icon: _id == _musicList[index].id
+                      icon: _id == bloc.musics[index].id
                           ? AnimatedIcon(
                               progress: _controller,
                               icon: AnimatedIcons.play_pause,
-                              color: _id == _musicList[index].id
+                              color: _id == bloc.musics[index].id
                                   ? Colors.white
                                   : AppColor.styleColor,
                             )
@@ -107,7 +113,7 @@ class _ListOfSongState extends State<ListOfSong>
 
                         setState(() {
                           // send to bloc id and set to play
-                          if (_id == _musicList[index].id) {
+                          if (_id == bloc.musics[index].id) {
                             if (_controller.isCompleted) {
                               _controller.reverse();
                             }
@@ -120,7 +126,7 @@ class _ListOfSongState extends State<ListOfSong>
                               _controller.forward(from: 0);
                             }
                             _controller.forward();
-                            _id = _musicList[index].id;
+                            _id = bloc.musics[index].id;
                           }
                         });
                       },

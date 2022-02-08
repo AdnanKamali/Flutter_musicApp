@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
-import 'package:bloc/bloc.dart';
+// import 'package:dart_tags/dart_tags.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:id3/id3.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
 import 'package:music_palyer/screen/list_page.dart';
@@ -39,6 +42,8 @@ class _MyAppState extends State<MyApp> {
   List<MusicModleState> musics = [];
   bool isLoadSong = false;
   void artistInfo() async {
+    // print(
+    // Directory("/storage/emulated/0/Download/Gharadi.mp3").statSync().);
     final songs = await audioQuery.getSongs();
     songs.forEach((element) async {
       if (element.id != null &&
@@ -59,7 +64,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       isLoadSong = true;
     });
-    provider.getListOfMusicModleState(musics);
+    provider.getListOfMusicModleState = musics;
   }
 
   // int result = 0;

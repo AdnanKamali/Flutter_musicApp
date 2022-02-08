@@ -41,6 +41,8 @@ dependencies:
   syncfusion_flutter_sliders: ^19.4.48
   flutter_bloc: ^8.0.1
   custom_timer: ^0.1.1
+  id3: ^1.0.2
+  dart_tags: ^0.4.0
 
 
 dev_dependencies:

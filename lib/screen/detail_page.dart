@@ -1,5 +1,4 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:custom_timer/custom_timer.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +7,7 @@ import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
 import 'package:music_palyer/bloc/music_model.dart';
 import 'package:music_palyer/my_colors.dart';
+
 import 'package:music_palyer/widget/custom_button_widget.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -22,117 +22,120 @@ class DetailPage extends StatefulWidget {
 
 class _DetailPageState extends State<DetailPage>
     with SingleTickerProviderStateMixin {
+  late TimerCubit _timerCubit;
   late AudioPlayer _audioPlayer;
   late AnimationController _controller;
   late MusicModleState modleState;
+  late BlocMusic _blocMusic;
+
   @override
   void initState() {
     super.initState();
+    _timerCubit = BlocProvider.of<TimerCubit>(context);
+    _blocMusic = BlocProvider.of<BlocMusic>(context);
     modleState = widget.modle;
-    _audioPlayer = AudioPlayer();
+    if (_blocMusic.audioPlayer.playerId == "Adnan") {
+      _audioPlayer = _blocMusic.audioPlayer;
+    } else {
+      _audioPlayer = AudioPlayer(playerId: "Adnan");
+      _blocMusic.audioPlayerSet = _audioPlayer;
+    }
+    // _blocMusic.nowPlayingSet = modleState;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
     );
   }
 
-  void timerSetMax(Future<int> miliSecond) async {
-    maxTime = await miliSecond;
-  }
+  Duration _duration = Duration.zero;
+  bool _isPlaying = false;
 
-  int _timer = 0;
-  bool isNextOrPervious = false;
-  bool isPlaying = false;
-  int maxTime = 0;
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _blocMusic.audioPlayerSet = _audioPlayer;
+    _blocMusic.nowPlayingSet = _blocMusic.findById(modleState.id);
+    _controller.dispose();
+  }
+  // use await for play and pause (point test use all of this in bloc)
+
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<BlocMusic>(context);
-    final timerCubit = BlocProvider.of<TimerCubit>(context);
+    _timerCubit.timer(_audioPlayer.onAudioPositionChanged);
+    if (_blocMusic.currentPlay == modleState &&
+        _blocMusic.audioPlayer.state == PlayerState.PLAYING) {
+      setState(() {
+        _isPlaying = true;
+      });
+      _controller.forward();
+    } else if (_blocMusic.currentPlay != modleState &&
+        _blocMusic.audioPlayer.state == PlayerState.PLAYING) {
+      _audioPlayer.play(modleState.path);
+      _blocMusic.nowPlayingSet = modleState;
+      setState(() {
+        _isPlaying = true;
+      });
+      _controller.forward();
+    }
 
-    timerCubit.timer(_audioPlayer.onAudioPositionChanged);
-
+    _blocMusic.audioPlayerSet = _audioPlayer;
     return Scaffold(
       backgroundColor: AppColor.mainColor,
       body: SafeArea(
-        child:
-            BlocBuilder<BlocMusic, MusicModleState>(builder: (context, state) {
-          _audioPlayer.onPlayerStateChanged.listen((myState) {
-            print(myState);
-            if (myState == PlayerState.COMPLETED && isPlaying) {
-              print("Not Playing");
-              setState(() {
-                isPlaying = false;
-                _timer = 0;
-              });
-              _audioPlayer.stop();
-              _controller.reverse();
-            }
-            if (myState == PlayerState.PLAYING) {
-              isPlaying = true;
-            }
-          });
-          timerSetMax(_audioPlayer.getDuration());
-          _audioPlayer.onPlayerError.listen((event) {
-            _audioPlayer.play(state.path);
-          });
-          if (isNextOrPervious) {
-            _audioPlayer.play(state.path);
-            _controller.forward();
-            isPlaying = true;
-            isNextOrPervious = false;
-          }
-          state = state.id.isEmpty ? modleState : state;
-          return Column(
+          child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CustomButtonWidget(
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColor.styleColor,
+                    ),
+                  ),
+                ),
+                const Text(
+                  "PLAYING NOW",
+                  style: TextStyle(color: AppColor.styleColor),
+                ),
+                CustomButtonWidget(
+                  child: IconButton(
+                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.menu,
+                      color: AppColor.styleColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 30,
+          ),
+          const Hero(
+            tag: "ImageTag",
+            child: CustomButtonWidget(
+              image: "asset/image/flower.jpg",
+              size: 250,
+              borderWidth: 5,
+            ),
+          ),
+          const SizedBox(
+            height: 50,
+          ),
+          Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CustomButtonWidget(
-                      child: IconButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: AppColor.styleColor,
-                        ),
-                      ),
-                    ),
-                    const Text(
-                      "PLAYING NOW",
-                      style: TextStyle(color: AppColor.styleColor),
-                    ),
-                    CustomButtonWidget(
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.menu,
-                          color: AppColor.styleColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              const Hero(
-                tag: "ImageTag",
-                child: CustomButtonWidget(
-                  image: "asset/image/flower.jpg",
-                  size: 250,
-                  borderWidth: 5,
-                ),
-              ),
-              const SizedBox(
-                height: 50,
-              ),
               FittedBox(
                 child: Text(
-                  state.title,
+                  modleState.title,
                   style:
                       const TextStyle(color: AppColor.styleColor, fontSize: 29),
                 ),
@@ -142,7 +145,7 @@ class _DetailPageState extends State<DetailPage>
               ),
               FittedBox(
                 child: Text(
-                  state.artist,
+                  modleState.artist,
                   style: TextStyle(
                       color: AppColor.styleColor.withOpacity(0.4),
                       fontSize: 23),
@@ -154,139 +157,138 @@ class _DetailPageState extends State<DetailPage>
                   const SizedBox(
                     width: 18,
                   ),
-                  Expanded(
-                      child: BlocConsumer<TimerCubit, Duration>(
-                    listener: (context, state1) async {
-                      setState(() {
-                        _timer = state1.inMilliseconds;
-                      });
-                    },
-                    builder: (context, state2) {
-                      final second = state2.inSeconds > 59
-                          ? (state2.inSeconds % 60)
-                          : state2.inSeconds;
-                      final secondTime = second > 9 ? "$second" : "0$second";
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "${state2.inMinutes}:$secondTime",
-                            style: const TextStyle(color: AppColor.styleColor),
-                          ),
-                          Text(
-                            "${maxTime ~/ 60000}:${(maxTime ~/ 1000) % 60}",
-                            style: const TextStyle(color: AppColor.styleColor),
-                          ),
-                        ],
-                      );
-                    },
-                  )),
+                  BlocConsumer<TimerCubit, Duration>(
+                      listener: (context, state) {
+                    // print(state);
+                  }, builder: (context, state) {
+                    _duration = state;
+                    if (modleState.id != _blocMusic.nowPlayingMusic.id) {
+                      _duration = Duration.zero;
+                    }
+
+                    return Expanded(
+                      child: Text(
+                        "${_duration.inMinutes > 9 ? _duration.inMinutes : '0' + _duration.inMinutes.toString()}:${_duration.inSeconds % 60 > 9 ? _duration.inSeconds % 60 : '0' + (_duration.inSeconds % 60).toString()}",
+                        style: const TextStyle(
+                            color: AppColor.styleColor, fontSize: 16),
+                      ),
+                    );
+                  }),
+                  Text(
+                    "${modleState.duration ~/ 60000 > 9 ? modleState.duration ~/ 60000 : '0' + (modleState.duration ~/ 60000).toString()}:${(modleState.duration ~/ 1000) % 60 > 9 ? (modleState.duration ~/ 1000) % 60 : '0' + (modleState.duration ~/ 1000 % 60).toString()}",
+                    style: const TextStyle(
+                        color: AppColor.styleColor, fontSize: 16),
+                  ),
                   const SizedBox(
                     width: 25,
                   ),
                 ],
               ),
-              SfSliderTheme(
-                  data: SfSliderTheme.of(context).copyWith(
-                    thumbStrokeWidth: 8,
-                    thumbStrokeColor: AppColor.mainColor,
-                    activeDividerColor: AppColor.styleColor,
-                    inactiveDividerColor: AppColor.styleColor.withAlpha(90),
-                    thumbColor: AppColor.darkBlue,
-                    thumbRadius: 15,
-                  ), // pre good library
-                  child: SfSlider(
-                    max: maxTime + 1,
-                    min: 0,
-                    value: _timer,
-                    onChanged: (v) async {
-                      // use for change time of music
-                      _audioPlayer.setUrl(state.path, isLocal: true);
+              BlocConsumer<TimerCubit, Duration>(
+                  listener: (context, state) {},
+                  builder: (context, state) {
+                    return SfSliderTheme(
+                        data: SfSliderTheme.of(context).copyWith(
+                          thumbStrokeWidth: 8,
+                          thumbStrokeColor: AppColor.mainColor,
+                          activeDividerColor: AppColor.styleColor,
+                          inactiveDividerColor:
+                              AppColor.styleColor.withAlpha(90),
+                          thumbColor: AppColor.darkBlue,
+                          thumbRadius: 15,
+                        ), // pre good library
+                        child: SfSlider(
+                          max: modleState.duration ~/ 1000,
+                          min: 0,
+                          value: state.inSeconds,
+                          onChanged: (v) {
+                            // use for change time of music
 
-                      _timer = v ~/ 1;
-
-                      _audioPlayer.seek(Duration(milliseconds: _timer));
-                    },
-                  )),
+                            _audioPlayer.seek(Duration(seconds: v ~/ 1));
+                          },
+                        ));
+                  }),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 35),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    CustomButtonWidget(
-                      size: 80,
-                      child: IconButton(
-                        onPressed: () {
-                          // Skip Previous Button...
-                          if (bloc.isStart(state.id)) {
-                            return;
-                          }
-                          bloc.add(SkipPreviousMusic(
-                              state.id, _audioPlayer.playerId));
+                  padding: const EdgeInsets.symmetric(vertical: 35),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      CustomButtonWidget(
+                        size: 80,
+                        child: IconButton(
+                          onPressed: () async {
+                            // Skip Previous Button...
 
-                          _controller.reverse();
-                          _timer = 0;
-                          isNextOrPervious = true;
-                        },
-                        icon: const Icon(Icons.skip_previous),
-                      ),
-                    ),
-                    CustomButtonWidget(
-                      // Play button...
-                      borderWidth: 0,
-                      isOnPressed: true,
-                      size: 80,
-                      child: IconButton(
-                        onPressed: () {
-                          if (!isPlaying) {
-                            _audioPlayer.play(state.path, isLocal: true);
-                            _controller.forward();
+                            if (_blocMusic.isStart(modleState.id)) {
+                              return;
+                            }
+                            final previous =
+                                _blocMusic.playPrevious(modleState.id);
+                            await _audioPlayer.play(previous.path);
+                            _blocMusic.nowPlayingSet = previous;
                             setState(() {
-                              isPlaying = true;
+                              modleState = previous;
                             });
-                          } else {
-                            _audioPlayer.pause();
-                            _controller.reverse();
-                            setState(() {
-                              isPlaying = false;
-                            });
-                          }
-                        },
-                        icon: AnimatedIcon(
-                          progress: _controller,
-                          icon: AnimatedIcons.play_pause,
-                          color: isPlaying ? Colors.white : AppColor.styleColor,
+                          },
+                          icon: const Icon(Icons.skip_previous),
                         ),
                       ),
-                    ),
-                    CustomButtonWidget(
-                      size: 80,
-                      child: IconButton(
-                        onPressed: () {
-                          // Skip Next Button...
-                          if (bloc.isEnd(state.id)) {
-                            return;
-                          }
-                          bloc.add(
-                              SkipNextMusic(state.id, _audioPlayer.playerId));
-                          if (_audioPlayer.state != PlayerState.STOPPED) {
-                            _audioPlayer.stop();
-                            _controller.reverse();
-                          }
+                      CustomButtonWidget(
+                        // Play button...
+                        borderWidth: 0,
+                        isOnPressed: true,
+                        size: 80,
+                        child: IconButton(
+                          onPressed: () async {
+                            if (_blocMusic.audioPlayer.state ==
+                                PlayerState.PLAYING) {
+                              await _audioPlayer.pause();
 
-                          _timer = 0;
-                          isNextOrPervious = true;
-                        },
-                        icon: const Icon(Icons.skip_next),
+                              setState(() {
+                                _isPlaying = false;
+                              });
+                              _controller.reverse();
+                            } else {
+                              await _audioPlayer.play(modleState.path);
+
+                              setState(() {
+                                _isPlaying = true;
+                              });
+                              _controller.forward();
+                            }
+                          },
+                          icon: AnimatedIcon(
+                            progress: _controller,
+                            icon: AnimatedIcons.play_pause,
+                            color:
+                                _isPlaying ? Colors.white : AppColor.styleColor,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              )
+                      CustomButtonWidget(
+                        size: 80,
+                        child: IconButton(
+                          onPressed: () async {
+                            // Skip Next Button...
+                            if (_blocMusic.isEnd(modleState.id)) {
+                              return;
+                            }
+                            final next = _blocMusic.playNext(modleState.id);
+                            await _audioPlayer.play(next.path);
+                            _blocMusic.nowPlayingSet = next;
+                            setState(() {
+                              modleState = next;
+                            });
+                          },
+                          icon: const Icon(Icons.skip_next),
+                        ),
+                      ),
+                    ],
+                  )),
             ],
-          );
-        }),
-      ),
+          )
+        ],
+      )),
     );
   }
 }

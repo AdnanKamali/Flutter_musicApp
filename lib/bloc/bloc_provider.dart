@@ -1,12 +1,22 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'bloc_event.dart';
 import 'music_model.dart';
 
 class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
   List<MusicModleState> _modle = [];
+  AudioPlayer _audioPlayer = AudioPlayer(playerId: "Base");
   MusicModleState nowPlayingMusic = MusicModleState.first();
-  void getListOfMusicModleState(List<MusicModleState> musics) {
+  set getListOfMusicModleState(List<MusicModleState> musics) {
     _modle = musics;
+  }
+
+  set audioPlayerSet(AudioPlayer audioPlayer) {
+    _audioPlayer = audioPlayer;
+  }
+
+  AudioPlayer get audioPlayer {
+    return _audioPlayer;
   }
 
   List<MusicModleState> get musics {
@@ -18,12 +28,6 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
   }
 
   MusicModleState findById(String id) {
-    if (id.isEmpty && nowPlayingMusic == MusicModleState.first()) {
-      print("No One");
-      return _modle[0];
-    } else if (nowPlayingMusic != MusicModleState.first()) {
-      return nowPlayingMusic;
-    }
     final music = _modle.firstWhere((element) => element.id == id);
     return music;
   }
@@ -42,10 +46,6 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     }
   }
 
-  MusicModleState get currentPlay {
-    return nowPlayingMusic;
-  }
-
   bool isStart(String id) {
     final index = _modle.indexWhere((element) => element.id == id);
     if (index == 0) {
@@ -55,6 +55,27 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     }
   }
 
+  MusicModleState playNext(String id) {
+    final index = _modle.indexWhere((element) => element.id == id);
+    return _modle[index + 1];
+  }
+
+  MusicModleState playPrevious(String id) {
+    final index = _modle.indexWhere((element) => element.id == id);
+    return _modle[index - 1];
+  }
+
+  MusicModleState get currentPlay {
+    return nowPlayingMusic;
+  }
+
+  bool get isHaveCurrentPlay {
+    if (nowPlayingMusic.id.isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
   BlocMusic() : super(MusicModleState.first()) {
     on<BlocEvent>((event, emit) {
       if (event is PlayMusic) {
@@ -62,9 +83,12 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
       } else if (event is PauseMusic) {
         emit(findById(event.idMusic));
       } else if (event is SkipNextMusic) {
+        nowPlayingSet = _modle[findIndex(event.nextMusicId) + 1];
         emit(_modle[findIndex(event.nextMusicId) + 1]);
       } else if (event is SkipPreviousMusic) {
         emit(_modle[findIndex(event.previousMusicId) - 1]);
+      } else if (event is NewMusicPlay) {
+        emit(findById(event.id));
       }
     });
   }
