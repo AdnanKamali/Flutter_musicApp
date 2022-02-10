@@ -1,10 +1,6 @@
-import 'dart:io';
-
 import 'package:audioplayers/audioplayers.dart';
-// import 'package:dart_tags/dart_tags.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:id3/id3.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
 import 'package:music_palyer/screen/list_page.dart';
@@ -18,10 +14,12 @@ void main() => runApp(MultiBlocProvider(
         BlocProvider<TimerCubit>(create: (ctx) => TimerCubit()),
         BlocProvider<BlocMusic>(create: (ctx) => BlocMusic()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ));
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   State<MyApp> createState() => _MyAppState();
 }

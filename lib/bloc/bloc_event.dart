@@ -2,21 +2,6 @@ import 'package:audioplayers/audioplayers.dart';
 
 abstract class BlocEvent {}
 
-class PlayMusic extends BlocEvent {
-  final String idMusicForPlay;
-
-  PlayMusic(this.idMusicForPlay);
-}
-
-class PauseMusic extends BlocEvent {
-  final String idMusic;
-  final AudioPlayer _audioPlayer;
-
-  PauseMusic(this.idMusic, this._audioPlayer) {
-    _audioPlayer.pause();
-  }
-}
-
 class SkipNextMusic extends BlocEvent {
   final String nextMusicId;
   final AudioPlayer _audioPlayer;

@@ -1,8 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_palyer/bloc/bloc_event.dart';
+
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
 import 'package:music_palyer/bloc/music_model.dart';
@@ -52,13 +52,12 @@ class _DetailPageState extends State<DetailPage>
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _blocMusic.audioPlayerSet = _audioPlayer;
     _blocMusic.nowPlayingSet = _blocMusic.findById(modleState.id);
+
     _controller.dispose();
   }
-  // use await for play and pause (point test use all of this in bloc)
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +104,10 @@ class _DetailPageState extends State<DetailPage>
                   "PLAYING NOW",
                   style: TextStyle(color: AppColor.styleColor),
                 ),
-                CustomButtonWidget(
+                const CustomButtonWidget(
                   child: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
+                    onPressed: null, // I wll Upadate
+                    icon: Icon(
                       Icons.menu,
                       color: AppColor.styleColor,
                     ),
@@ -158,22 +157,21 @@ class _DetailPageState extends State<DetailPage>
                     width: 18,
                   ),
                   BlocConsumer<TimerCubit, Duration>(
-                      listener: (context, state) {
-                    // print(state);
-                  }, builder: (context, state) {
-                    _duration = state;
-                    if (modleState.id != _blocMusic.nowPlayingMusic.id) {
-                      _duration = Duration.zero;
-                    }
+                      listener: (context, state) {},
+                      builder: (context, state) {
+                        _duration = state;
+                        if (modleState.id != _blocMusic.nowPlayingMusic.id) {
+                          _duration = Duration.zero;
+                        }
 
-                    return Expanded(
-                      child: Text(
-                        "${_duration.inMinutes > 9 ? _duration.inMinutes : '0' + _duration.inMinutes.toString()}:${_duration.inSeconds % 60 > 9 ? _duration.inSeconds % 60 : '0' + (_duration.inSeconds % 60).toString()}",
-                        style: const TextStyle(
-                            color: AppColor.styleColor, fontSize: 16),
-                      ),
-                    );
-                  }),
+                        return Expanded(
+                          child: Text(
+                            "${_duration.inMinutes > 9 ? _duration.inMinutes : '0' + _duration.inMinutes.toString()}:${_duration.inSeconds % 60 > 9 ? _duration.inSeconds % 60 : '0' + (_duration.inSeconds % 60).toString()}",
+                            style: const TextStyle(
+                                color: AppColor.styleColor, fontSize: 16),
+                          ),
+                        );
+                      }),
                   Text(
                     "${modleState.duration ~/ 60000 > 9 ? modleState.duration ~/ 60000 : '0' + (modleState.duration ~/ 60000).toString()}:${(modleState.duration ~/ 1000) % 60 > 9 ? (modleState.duration ~/ 1000) % 60 : '0' + (modleState.duration ~/ 1000 % 60).toString()}",
                     style: const TextStyle(
@@ -196,7 +194,7 @@ class _DetailPageState extends State<DetailPage>
                               AppColor.styleColor.withAlpha(90),
                           thumbColor: AppColor.darkBlue,
                           thumbRadius: 15,
-                        ), // pre good library
+                        ),
                         child: SfSlider(
                           max: modleState.duration ~/ 1000,
                           min: 0,
