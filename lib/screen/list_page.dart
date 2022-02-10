@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
-import 'package:music_palyer/cubit/timer_cubit.dart';
+
 import 'package:music_palyer/screen/detail_page.dart';
 import 'package:music_palyer/widget/custom_button_widget.dart';
 import 'package:music_palyer/bloc/music_model.dart';
@@ -20,7 +20,7 @@ class ListPage extends StatefulWidget {
 
 class _ListPageState extends State<ListPage> {
   bool isFavorit = false;
-
+  String id = "";
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<BlocMusic>(context);
@@ -49,6 +49,7 @@ class _ListPageState extends State<ListPage> {
                       isOnPressed: isFavorit,
                       child: IconButton(
                         onPressed: () {
+                          // I will Update
                           setState(() {
                             isFavorit = !isFavorit;
                           });
@@ -62,11 +63,22 @@ class _ListPageState extends State<ListPage> {
                     InkWell(
                       onTap: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (c) => DetailPage(
-                                    modle: bloc.musics[0],
-                                  )),
-                        ); // use true value
+                          MaterialPageRoute(builder: (c) {
+                            MusicModleState modleState;
+                            if (bloc.isHaveCurrentPlay) {
+                              modleState = bloc.currentPlay;
+                            } else {
+                              modleState = bloc.musics[0];
+                              bloc.nowPlayingSet = modleState;
+                            }
+
+                            return DetailPage(
+                              modle: modleState,
+                            );
+                          }),
+                        ).then((value) {
+                          setState(() {});
+                        });
                       },
                       child: const Hero(
                         tag: "ImageTag",
@@ -92,6 +104,7 @@ class _ListPageState extends State<ListPage> {
               Expanded(
                 child: ListOfSong(
                   widget: widget,
+                  id: id,
                 ),
               ),
             ],

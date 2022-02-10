@@ -1,5 +1,7 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_palyer/bloc/bloc_event.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/screen/detail_page.dart';
 import 'package:music_palyer/screen/list_page.dart';
@@ -7,9 +9,11 @@ import 'custom_button_widget.dart';
 import '../my_colors.dart';
 
 class ListOfSong extends StatefulWidget {
+  final String id;
   const ListOfSong({
     Key? key,
     required this.widget,
+    required this.id,
   }) : super(key: key);
 
   final ListPage widget;
@@ -22,41 +26,59 @@ class _ListOfSongState extends State<ListOfSong>
     with SingleTickerProviderStateMixin {
   String _id = "";
   late AnimationController _controller;
+  late AudioPlayer _audioPlayer;
   @override
   void initState() {
     super.initState();
+    _audioPlayer = AudioPlayer(playerId: "Adnan");
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 400));
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<BlocMusic>(context);
+    if (bloc.audioPlayer.state == PlayerState.PLAYING) {
+      _id = bloc.currentPlay.id;
+      _controller.forward();
+    } else {
+      _id = "";
+    }
     return ListView.builder(
         physics: const BouncingScrollPhysics(),
-        itemCount: widget.widget.musics.length,
+        itemCount: bloc.musics.length,
         itemBuilder: (ctx, index) {
-          final _musicList = widget.widget.musics;
-          final _durationMiliseccond = _musicList[index].duration.round();
-          final _durationMinute = (_durationMiliseccond ~/ 60000);
-          final _durationSeccond =
-              (((_durationMiliseccond / 60000) - _durationMinute) * 60).round();
           return AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             decoration: BoxDecoration(
-                color: _id == _musicList[index].id
+                color: _id == bloc.musics[index].id
                     ? AppColor.activeColor
                     : AppColor.mainColor,
                 borderRadius: BorderRadius.circular(20)),
             padding: const EdgeInsets.all(16),
             child: InkWell(
               onTap: () {
+                if (_audioPlayer.state == PlayerState.PLAYING) {
+                  bloc.audioPlayerSet = _audioPlayer;
+                }
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (c) => DetailPage(
-                      modle: _musicList[index],
-                    ),
+                    builder: (c) {
+                      bloc.add(NewMusicPlay(bloc.musics[index].id));
+                      return DetailPage(
+                        modle: bloc.musics[index],
+                      );
+                    },
                   ),
-                );
+                ).then((value) {
+                  setState(() {});
+                });
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -66,7 +88,7 @@ class _ListOfSongState extends State<ListOfSong>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _musicList[index].title,
+                        bloc.musics[index].title,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           color: AppColor.styleColor,
@@ -74,55 +96,57 @@ class _ListOfSongState extends State<ListOfSong>
                         ),
                       ),
                       Text(
-                        _musicList[index].artist,
+                        bloc.musics[index].artist,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           color: AppColor.styleColor,
                           fontSize: 16,
                         ),
                       ),
-                      // Text(
-                      //   "${_durationMinute > 9 ? _durationMinute : "0" + _durationMinute.toString()}:${_durationSeccond > 9 ? _durationMinute : "0" + _durationSeccond.toString()}",
-                      //   style: const TextStyle(
-                      //     color: AppColor.styleColor,
-                      //     fontSize: 16,
-                      //   ),
-                      // ),
                     ],
                   ),
                   CustomButtonWidget(
-                    isOnPressed: _id == _musicList[index].id,
+                    isOnPressed: _id == bloc.musics[index].id,
                     child: IconButton(
-                      icon: _id == _musicList[index].id
+                      icon: _id == bloc.musics[index].id
                           ? AnimatedIcon(
                               progress: _controller,
                               icon: AnimatedIcons.play_pause,
-                              color: _id == _musicList[index].id
+                              color: _id == bloc.musics[index].id
                                   ? Colors.white
                                   : AppColor.styleColor,
                             )
                           : const Icon(Icons.play_arrow),
-                      onPressed: () {
-                        // send Event play
-
-                        setState(() {
-                          // send to bloc id and set to play
-                          if (_id == _musicList[index].id) {
-                            if (_controller.isCompleted) {
-                              _controller.reverse();
-                            }
-
-                            _id = "";
-                          } else {
-                            // _controller.reverse();
-
-                            if (_controller.isCompleted) {
-                              _controller.forward(from: 0);
-                            }
-                            _controller.forward();
-                            _id = _musicList[index].id;
-                          }
-                        });
+                      onPressed: () async {
+                        if (bloc.currentPlay != bloc.musics[index]) {
+                          setState(() {
+                            bloc.nowPlayingSet = bloc.musics[index];
+                          });
+                          await _audioPlayer.play(bloc.musics[index].path);
+                          _controller.forward();
+                          setState(() {
+                            _id = bloc.currentPlay.id;
+                          });
+                        } else if (bloc.currentPlay == bloc.musics[index] &&
+                            _audioPlayer.state == PlayerState.PLAYING) {
+                          await _audioPlayer.pause();
+                          Future.delayed(_controller.duration!).then(
+                            (value) {
+                              setState(() {
+                                _id = "";
+                              });
+                            },
+                          ); // Future for hamahang animation
+                          _controller.reverse();
+                        } else if (bloc.currentPlay == bloc.musics[index] &&
+                            _audioPlayer.state != PlayerState.PLAYING) {
+                          await _audioPlayer.play(bloc.musics[index].path);
+                          setState(() {
+                            _id = bloc.currentPlay.id;
+                          });
+                          _controller.forward();
+                        }
+                        bloc.audioPlayerSet = _audioPlayer;
                       },
                     ),
                   ),

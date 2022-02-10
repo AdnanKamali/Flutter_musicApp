@@ -57,6 +57,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.15.0"
+  convert:
+    dependency: transitive
+    description:
+      name: convert
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.1"
   crypto:
     dependency: transitive
     description:
@@ -78,6 +85,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.1"
+  dart_tags:
+    dependency: "direct main"
+    description:
+      name: dart_tags
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.0"
   fake_async:
     dependency: transitive
     description:
@@ -156,6 +170,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.0"
+  id3:
+    dependency: "direct main"
+    description:
+      name: id3
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   intl:
     dependency: transitive
     description:
@@ -357,6 +378,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.3.0"
+  utf_convert:
+    dependency: transitive
+    description:
+      name: utf_convert
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.10.0+1"
   uuid:
     dependency: transitive
     description:
