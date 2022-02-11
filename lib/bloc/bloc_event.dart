@@ -3,7 +3,7 @@ import 'package:audioplayers/audioplayers.dart';
 abstract class BlocEvent {}
 
 class SkipNextMusic extends BlocEvent {
-  final String nextMusicId;
+  final int nextMusicId;
   final AudioPlayer _audioPlayer;
   SkipNextMusic(this.nextMusicId, this._audioPlayer) {
     if (_audioPlayer.state != PlayerState.COMPLETED) {
@@ -13,7 +13,7 @@ class SkipNextMusic extends BlocEvent {
 }
 
 class SkipPreviousMusic extends BlocEvent {
-  final String previousMusicId;
+  final int previousMusicId;
   final AudioPlayer _audioPlayer;
   SkipPreviousMusic(this.previousMusicId, this._audioPlayer) {
     if (_audioPlayer.state != PlayerState.COMPLETED) {
@@ -23,7 +23,7 @@ class SkipPreviousMusic extends BlocEvent {
 }
 
 class NewMusicPlay extends BlocEvent {
-  final String id;
+  final int id;
 
   NewMusicPlay(this.id);
 }

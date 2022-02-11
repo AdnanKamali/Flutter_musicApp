@@ -30,19 +30,19 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     nowPlayingMusic = modleState;
   }
 
-  MusicModleState findById(String id) {
+  MusicModleState findById(int id) {
     '''pass id music and get Music Modle''';
     final music = _modle.firstWhere((element) => element.id == id);
     return music;
   }
 
-  int findIndex(String id) {
+  int findIndex(int id) {
     '''pass id music and get Music index in List of Musics''';
     final music = _modle.indexWhere((element) => element.id == id);
     return music;
   }
 
-  bool isEnd(String id) {
+  bool isEnd(int id) {
     '''pass id and find location of music and get is end of list of musics or not''';
     final index = _modle.indexWhere((element) => element.id == id);
     if (index == _modle.length - 1) {
@@ -52,7 +52,7 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     }
   }
 
-  bool isStart(String id) {
+  bool isStart(int id) {
     '''pass id and find location of music and get is start of list of musics or not''';
     final index = _modle.indexWhere((element) => element.id == id);
     if (index == 0) {
@@ -62,7 +62,7 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     }
   }
 
-  MusicModleState playNext(String id) {
+  MusicModleState playNext(int id) {
     '''pass id and get get next Music Modle 
     Note: please befor use it use isEnd method
     ''';
@@ -70,7 +70,7 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     return _modle[index + 1];
   }
 
-  MusicModleState playPrevious(String id) {
+  MusicModleState playPrevious(int id) {
     '''pass id and get get previous Music Modle 
     Note: please befor use it use isStart method
     ''';
@@ -85,7 +85,7 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
 
   bool get isHaveCurrentPlay {
     '''with use this check is now palying set or not''';
-    if (nowPlayingMusic.id.isEmpty) {
+    if (nowPlayingMusic.id == 0) {
       return false;
     }
     return true;

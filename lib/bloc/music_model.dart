@@ -1,15 +1,15 @@
 class MusicModleState {
-  final String id;
+  final int id;
   final String playerId;
   final String title;
   final String path;
-  final double duration;
+  final int duration;
   final String artist;
   MusicModleState.first({
     this.playerId = "",
     this.artist = "",
     this.duration = 0,
-    this.id = "",
+    this.id = 0,
     this.path = "",
     this.title = "",
   });

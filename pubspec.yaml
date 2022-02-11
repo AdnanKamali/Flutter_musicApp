@@ -35,14 +35,11 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   audioplayers: ^0.20.1
-  flutter_audio_query: ^0.3.5+6
   bloc: ^8.0.2
   syncfusion_flutter_core: ^19.4.48
   syncfusion_flutter_sliders: ^19.4.48
   flutter_bloc: ^8.0.1
-  custom_timer: ^0.1.1
-  id3: ^1.0.2
-  dart_tags: ^0.4.0
+  on_audio_query: ^2.6.0
 
 
 dev_dependencies:

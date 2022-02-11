@@ -24,7 +24,7 @@ class ListOfSong extends StatefulWidget {
 
 class _ListOfSongState extends State<ListOfSong>
     with SingleTickerProviderStateMixin {
-  String _id = "";
+  int _id = 0;
   late AnimationController _controller;
   late AudioPlayer _audioPlayer;
   @override
@@ -48,7 +48,7 @@ class _ListOfSongState extends State<ListOfSong>
       _id = bloc.currentPlay.id;
       _controller.forward();
     } else {
-      _id = "";
+      _id = 0;
     }
     return ListView.builder(
         physics: const BouncingScrollPhysics(),
@@ -77,7 +77,7 @@ class _ListOfSongState extends State<ListOfSong>
                     },
                   ),
                 ).then((value) {
-                  setState(() {});
+                  setState(() {}); // update widgets
                 });
               },
               child: Row(
@@ -88,7 +88,10 @@ class _ListOfSongState extends State<ListOfSong>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        bloc.musics[index].title,
+                        bloc.musics[index].title.length < 50
+                            ? bloc.musics[index].title
+                            : bloc.musics[index].title.substring(50),
+                        overflow: TextOverflow.fade,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           color: AppColor.styleColor,
@@ -97,6 +100,7 @@ class _ListOfSongState extends State<ListOfSong>
                       ),
                       Text(
                         bloc.musics[index].artist,
+                        overflow: TextOverflow.clip,
                         textAlign: TextAlign.start,
                         style: const TextStyle(
                           color: AppColor.styleColor,
@@ -133,7 +137,7 @@ class _ListOfSongState extends State<ListOfSong>
                           Future.delayed(_controller.duration!).then(
                             (value) {
                               setState(() {
-                                _id = "";
+                                _id = 0;
                               });
                             },
                           ); // Future for hamahang animation

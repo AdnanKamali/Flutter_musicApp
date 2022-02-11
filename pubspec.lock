@@ -57,13 +57,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.15.0"
-  convert:
-    dependency: transitive
-    description:
-      name: convert
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.1"
   crypto:
     dependency: transitive
     description:
@@ -78,20 +71,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
-  custom_timer:
-    dependency: "direct main"
-    description:
-      name: custom_timer
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.1"
-  dart_tags:
-    dependency: "direct main"
-    description:
-      name: dart_tags
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.4.0"
   fake_async:
     dependency: transitive
     description:
@@ -118,13 +97,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_audio_query:
-    dependency: "direct main"
-    description:
-      name: flutter_audio_query
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.3.5+6"
   flutter_bloc:
     dependency: "direct main"
     description:
@@ -139,13 +111,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
-  flutter_plugin_android_lifecycle:
-    dependency: transitive
-    description:
-      name: flutter_plugin_android_lifecycle
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.11"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -171,7 +136,7 @@ packages:
     source: hosted
     version: "4.0.0"
   id3:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: id3
       url: "https://pub.dartlang.org"
@@ -226,6 +191,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  on_audio_query:
+    dependency: "direct main"
+    description:
+      name: on_audio_query
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.6.0"
+  on_audio_query_platform_interface:
+    dependency: transitive
+    description:
+      name: on_audio_query_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.4.0"
+  on_audio_query_web:
+    dependency: transitive
+    description:
+      name: on_audio_query_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.3.2+2"
   path:
     dependency: transitive
     description:
@@ -378,13 +364,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.3.0"
-  utf_convert:
-    dependency: transitive
-    description:
-      name: utf_convert
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.10.0+1"
   uuid:
     dependency: transitive
     description:

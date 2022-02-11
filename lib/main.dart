@@ -3,9 +3,11 @@ import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
+import 'package:music_palyer/my_colors.dart';
 import 'package:music_palyer/screen/list_page.dart';
-import 'package:flutter_audio_query/flutter_audio_query.dart';
+
 import 'package:music_palyer/bloc/music_model.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 
 import 'bloc/music_model.dart';
 
@@ -25,65 +27,64 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final FlutterAudioQuery audioQuery = FlutterAudioQuery();
-
   late AudioPlayer audioPlayer;
   late BlocMusic provider;
+  late OnAudioQuery onAudioQuery;
   @override
   void initState() {
     super.initState();
-    provider = BlocProvider.of<BlocMusic>(context);
+    onAudioQuery = OnAudioQuery();
     artistInfo();
+    provider = BlocProvider.of<BlocMusic>(context);
     audioPlayer = AudioPlayer();
   }
 
-  List<MusicModleState> musics = [];
-  bool isLoadSong = false;
   void artistInfo() async {
-    // print(
-    // Directory("/storage/emulated/0/Download/Gharadi.mp3").statSync().);
-    final songs = await audioQuery.getSongs();
-    songs.forEach((element) async {
-      if (element.id != null &&
-          element.title != null &&
-          element.duration != null) {
+    final List<MusicModleState> musics = [];
+    final songs = await onAudioQuery.querySongs();
+    for (var element in songs) {
+      if (element.duration != null) {
         final music = MusicModleState(
-          artist: element.artist,
+          artist: element.artist!,
           id: element.id,
-          path: element.filePath,
+          path: element.data,
           title: element.title,
-          duration: double.parse(element.duration),
+          duration: element.duration!,
         );
         musics.add(music);
         await Future.delayed(
             const Duration(microseconds: 10)); // this is for complete ui
       }
-    });
-    setState(() {
-      isLoadSong = true;
-    });
+    }
     provider.getListOfMusicModleState = musics;
+    setState(() {
+      isLoading = false;
+    });
   }
+
+  bool isLoading = true;
 
   // int result = 0;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Music Player",
-      home: isLoadSong
-          ? ListPage(
-              musics: musics.isEmpty
+      home: isLoading
+          ? const Scaffold(
+              backgroundColor: AppColor.mainColor,
+              body: Center(child: CircularProgressIndicator()))
+          : ListPage(
+              musics: provider.musics.isEmpty
                   ? ([
                       MusicModleState(
                           artist: "Not Found",
-                          id: "Not Found",
+                          id: 0,
                           duration: 0,
                           path: "",
                           title: "Not Found"),
                     ])
-                  : musics,
-            )
-          : const Scaffold(body: Center(child: CircularProgressIndicator())),
+                  : provider.musics,
+            ),
     );
   }
 }
