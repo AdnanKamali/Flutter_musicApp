@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_palyer/my_colors.dart';
+import 'package:music_palyer/styles/color_manager.dart';
 
 class CustomButtonWidget extends StatelessWidget {
   final double size;

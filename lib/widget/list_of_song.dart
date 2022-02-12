@@ -5,8 +5,9 @@ import 'package:music_palyer/bloc/bloc_event.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/screen/detail_page.dart';
 import 'package:music_palyer/screen/list_page.dart';
+import 'package:music_palyer/styles/style_manager.dart';
 import 'custom_button_widget.dart';
-import '../my_colors.dart';
+import '../styles/color_manager.dart';
 
 class ListOfSong extends StatefulWidget {
   final String id;
@@ -93,19 +94,13 @@ class _ListOfSongState extends State<ListOfSong>
                             : bloc.musics[index].title.substring(50),
                         overflow: TextOverflow.fade,
                         textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          color: AppColor.styleColor,
-                          fontSize: 16,
-                        ),
+                        style: getTitileStyle(fontSize: 16),
                       ),
                       Text(
                         bloc.musics[index].artist,
                         overflow: TextOverflow.clip,
                         textAlign: TextAlign.start,
-                        style: const TextStyle(
-                          color: AppColor.styleColor,
-                          fontSize: 16,
-                        ),
+                        style: getSubTitleStyle(),
                       ),
                     ],
                   ),

@@ -6,7 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
 import 'package:music_palyer/bloc/music_model.dart';
-import 'package:music_palyer/my_colors.dart';
+import 'package:music_palyer/styles/color_manager.dart';
+import 'package:music_palyer/styles/style_manager.dart';
 
 import 'package:music_palyer/widget/custom_button_widget.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
@@ -168,26 +169,48 @@ class _DetailPageState extends State<DetailPage>
                       width: 20,
                     ),
                     BlocConsumer<TimerCubit, Duration>(
-                        listener: (context, state) {},
-                        builder: (context, state) {
-                          _duration = state;
-                          if (modleState.id != _blocMusic.nowPlayingMusic.id) {
-                            _duration = Duration.zero;
-                          }
+                        listener: (context, state) async {
+                      if (state.inSeconds ==
+                          await _audioPlayer.getDuration() ~/ 1000) {
+                        print("Complete");
+                        if (_blocMusic.isEnd(modleState.id)) {
+                          print("Is End");
 
-                          return Expanded(
-                            child: Text(
-                              "${_duration.inMinutes > 9 ? _duration.inMinutes : '0' + _duration.inMinutes.toString()}:${_duration.inSeconds % 60 > 9 ? _duration.inSeconds % 60 : '0' + (_duration.inSeconds % 60).toString()}",
-                              style: const TextStyle(
-                                  color: AppColor.styleColor, fontSize: 16),
-                            ),
-                          );
-                        }),
+                          _duration = Duration.zero;
+                          setState(() {
+                            _isPlaying = false;
+                          });
+
+                          _audioPlayer.seek(_duration);
+                          _controller.reverse();
+                          _audioPlayer.stop();
+                          _blocMusic.audioPlayerSet = _audioPlayer;
+                        } else {
+                          final next = _blocMusic.playNext(modleState.id);
+                          await _audioPlayer.play(next.path);
+                          _blocMusic.nowPlayingSet = next;
+                          setState(() {
+                            modleState = next;
+                          });
+                        }
+                      }
+                    }, builder: (context, state) {
+                      _duration = state;
+                      if (modleState.id != _blocMusic.nowPlayingMusic.id) {
+                        _duration = Duration.zero;
+                      }
+
+                      return Expanded(
+                        child: Text(
+                            "${_duration.inMinutes > 9 ? _duration.inMinutes : '0' + _duration.inMinutes.toString()}:${_duration.inSeconds % 60 > 9 ? _duration.inSeconds % 60 : '0' + (_duration.inSeconds % 60).toString()}",
+                            style: getSubTitleStyle(
+                                fontSize: 16, fontWeight: FontWeight.w400)),
+                      );
+                    }),
                     Text(
-                      "${modleState.duration ~/ 60000 > 9 ? modleState.duration ~/ 60000 : '0' + (modleState.duration ~/ 60000).toString()}:${(modleState.duration ~/ 1000) % 60 > 9 ? (modleState.duration ~/ 1000) % 60 : '0' + (modleState.duration ~/ 1000 % 60).toString()}",
-                      style: const TextStyle(
-                          color: AppColor.styleColor, fontSize: 16),
-                    ),
+                        "${modleState.duration ~/ 60000 > 9 ? modleState.duration ~/ 60000 : '0' + (modleState.duration ~/ 60000).toString()}:${(modleState.duration ~/ 1000) % 60 > 9 ? (modleState.duration ~/ 1000) % 60 : '0' + (modleState.duration ~/ 1000 % 60).toString()}",
+                        style: getSubTitleStyle(
+                            fontSize: 16, fontWeight: FontWeight.w400)),
                     const SizedBox(
                       width: 25,
                     ),
@@ -209,11 +232,12 @@ class _DetailPageState extends State<DetailPage>
                           child: SfSlider(
                             max: modleState.duration ~/ 1000,
                             min: 0,
-                            value: state.inSeconds,
+                            value: _duration.inSeconds,
                             onChanged: (v) {
                               // use for change time of music
 
-                              _audioPlayer.seek(Duration(seconds: v ~/ 1));
+                              _audioPlayer
+                                  .seek(Duration(seconds: (v ~/ 1) - 2));
                             },
                           ));
                     }),

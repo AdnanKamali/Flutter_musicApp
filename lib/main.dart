@@ -3,7 +3,7 @@ import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
-import 'package:music_palyer/my_colors.dart';
+import 'package:music_palyer/styles/color_manager.dart';
 import 'package:music_palyer/screen/list_page.dart';
 
 import 'package:music_palyer/bloc/music_model.dart';
@@ -43,7 +43,7 @@ class _MyAppState extends State<MyApp> {
     final List<MusicModleState> musics = [];
     final songs = await onAudioQuery.querySongs();
     for (var element in songs) {
-      if (element.duration != null) {
+      if (element.duration != null && element.duration != 0) {
         final music = MusicModleState(
           artist: element.artist!,
           id: element.id,
@@ -72,7 +72,10 @@ class _MyAppState extends State<MyApp> {
       home: isLoading
           ? const Scaffold(
               backgroundColor: AppColor.mainColor,
-              body: Center(child: CircularProgressIndicator()))
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
           : ListPage(
               musics: provider.musics.isEmpty
                   ? ([

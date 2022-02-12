@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
 
 import 'package:music_palyer/screen/detail_page.dart';
+import 'package:music_palyer/styles/style_manager.dart';
 import 'package:music_palyer/widget/custom_button_widget.dart';
 import 'package:music_palyer/bloc/music_model.dart';
-import 'package:music_palyer/my_colors.dart';
+import 'package:music_palyer/styles/color_manager.dart';
 import 'package:music_palyer/widget/list_of_song.dart';
 
 import '../widget/list_of_song.dart';
@@ -24,15 +25,16 @@ class _ListPageState extends State<ListPage> {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<BlocMusic>(context);
+    final bool isEmptyMusics = bloc.musics.first.path.isEmpty;
     return Scaffold(
       backgroundColor: AppColor.mainColor,
       appBar: AppBar(
         centerTitle: true,
         elevation: 0,
         backgroundColor: AppColor.mainColor,
-        title: const Text(
+        title: Text(
           "List of Song",
-          style: TextStyle(color: AppColor.styleColor),
+          style: getTitileStyle(fontWeight: FontWeight.w300),
         ),
       ),
       body: Stack(
@@ -61,25 +63,27 @@ class _ListPageState extends State<ListPage> {
                       ),
                     ),
                     InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (c) {
-                            MusicModleState modleState;
-                            if (bloc.isHaveCurrentPlay) {
-                              modleState = bloc.currentPlay;
-                            } else {
-                              modleState = bloc.musics[0];
-                              bloc.nowPlayingSet = modleState;
-                            }
+                      onTap: isEmptyMusics
+                          ? null
+                          : () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (c) {
+                                  MusicModleState modleState;
+                                  if (bloc.isHaveCurrentPlay) {
+                                    modleState = bloc.currentPlay;
+                                  } else {
+                                    modleState = bloc.musics[0];
+                                    bloc.nowPlayingSet = modleState;
+                                  }
 
-                            return DetailPage(
-                              modle: modleState,
-                            );
-                          }),
-                        ).then((value) {
-                          setState(() {});
-                        });
-                      },
+                                  return DetailPage(
+                                    modle: modleState,
+                                  );
+                                }),
+                              ).then((value) {
+                                setState(() {});
+                              });
+                            },
                       child: const Hero(
                         tag: "ImageTag",
                         child: CustomButtonWidget(
@@ -102,10 +106,14 @@ class _ListPageState extends State<ListPage> {
                 ),
               ),
               Expanded(
-                child: ListOfSong(
-                  widget: widget,
-                  id: id,
-                ),
+                child: isEmptyMusics
+                    ? const Center(
+                        child: Text("Not Found"),
+                      )
+                    : ListOfSong(
+                        widget: widget,
+                        id: id,
+                      ),
               ),
             ],
           ),
