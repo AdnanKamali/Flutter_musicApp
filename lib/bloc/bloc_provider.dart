@@ -1,15 +1,16 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
+import 'package:music_palyer/bloc/bloc_state.dart';
 import 'bloc_event.dart';
 import 'music_model.dart';
 
-class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
-  List<MusicModleState> _modle = [];
+class BlocMusic extends Bloc<BlocEvent, BlocState> {
+  List<MusicModel> _model = [];
   AudioPlayer _audioPlayer = AudioPlayer(playerId: "Base");
-  MusicModleState nowPlayingMusic = MusicModleState.first();
 
-  set getListOfMusicModleState(List<MusicModleState> musics) {
-    _modle = musics;
+  bool _isOneLoopPlaying = false;
+  set getListOfMusicModel(List<MusicModel> musics) {
+    _model = musics;
   }
 
   set audioPlayerSet(AudioPlayer audioPlayer) {
@@ -20,32 +21,27 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     return _audioPlayer;
   }
 
-  List<MusicModleState> get musics {
+  List<MusicModel> get musics {
     '''List of Musics on phone''';
-    return _modle;
+    return _model;
   }
 
-  set nowPlayingSet(MusicModleState modleState) {
-    '''set now Playing music for use it later''';
-    nowPlayingMusic = modleState;
-  }
-
-  MusicModleState findById(int id) {
+  MusicModel findById(int id) {
     '''pass id music and get Music Modle''';
-    final music = _modle.firstWhere((element) => element.id == id);
+    final music = _model.firstWhere((element) => element.id == id);
     return music;
   }
 
   int findIndex(int id) {
     '''pass id music and get Music index in List of Musics''';
-    final music = _modle.indexWhere((element) => element.id == id);
+    final music = _model.indexWhere((element) => element.id == id);
     return music;
   }
 
   bool isEnd(int id) {
     '''pass id and find location of music and get is end of list of musics or not''';
-    final index = _modle.indexWhere((element) => element.id == id);
-    if (index == _modle.length - 1) {
+    final index = _model.indexWhere((element) => element.id == id);
+    if (index == _model.length - 1) {
       return true;
     } else {
       return false;
@@ -54,7 +50,7 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
 
   bool isStart(int id) {
     '''pass id and find location of music and get is start of list of musics or not''';
-    final index = _modle.indexWhere((element) => element.id == id);
+    final index = _model.indexWhere((element) => element.id == id);
     if (index == 0) {
       return true;
     } else {
@@ -62,44 +58,49 @@ class BlocMusic extends Bloc<BlocEvent, MusicModleState> {
     }
   }
 
-  MusicModleState playNext(int id) {
+  MusicModel playNext(int id) {
     '''pass id and get get next Music Modle 
     Note: please befor use it use isEnd method
     ''';
-    final index = _modle.indexWhere((element) => element.id == id);
-    return _modle[index + 1];
+    final index = _model.indexWhere((element) => element.id == id);
+    return _model[index + 1];
   }
 
-  MusicModleState playPrevious(int id) {
+  MusicModel playPrevious(int id) {
     '''pass id and get get previous Music Modle 
     Note: please befor use it use isStart method
     ''';
-    final index = _modle.indexWhere((element) => element.id == id);
-    return _modle[index - 1];
+    final index = _model.indexWhere((element) => element.id == id);
+    return _model[index - 1];
   }
 
-  MusicModleState get currentPlay {
-    '''get Now Playing Music Modle''';
-    return nowPlayingMusic;
+  set isOneLoopPlayingSet(bool isOneLoopPlayingArg) {
+    _isOneLoopPlaying = isOneLoopPlayingArg;
   }
 
-  bool get isHaveCurrentPlay {
-    '''with use this check is now palying set or not''';
-    if (nowPlayingMusic.id == 0) {
-      return false;
-    }
-    return true;
-  }
-
-  BlocMusic() : super(MusicModleState.first()) {
-    on<BlocEvent>((event, emit) {
+  BlocMusic() : super(BlocState(MusicModel.first())) {
+    on<BlocEvent>((event, emit) async {
       if (event is SkipNextMusic) {
-        nowPlayingSet = _modle[findIndex(event.nextMusicId) + 1];
-        emit(_modle[findIndex(event.nextMusicId) + 1]);
+        final playingThisMusic =
+            _model[findIndex(event.nextMusicId) + 1]; // next music
+        await _audioPlayer.play(playingThisMusic.path, isLocal: true);
+        emit(BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
       } else if (event is SkipPreviousMusic) {
-        emit(_modle[findIndex(event.previousMusicId) - 1]);
-      } else if (event is NewMusicPlay) {
-        emit(findById(event.id));
+        final playingThisMusic =
+            _model[findIndex(event.previousMusicId) - 1]; // previous music
+        await _audioPlayer.play(playingThisMusic.path);
+        emit(BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
+      } else if (event is PlayMusic) {
+        await _audioPlayer.play(findById(event.musicId).path, isLocal: true);
+        emit(BlocState(findById(event.musicId),
+            isOneLoopPlaying: _isOneLoopPlaying));
+      } else if (event is PauseResumeMusic) {
+        if (_audioPlayer.state == PlayerState.PAUSED) {
+          await _audioPlayer.resume();
+        } else {
+          await _audioPlayer.pause();
+        }
+        emit(BlocState(state.modelState));
       }
     });
   }

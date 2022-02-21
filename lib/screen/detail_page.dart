@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:music_palyer/bloc/bloc_event.dart';
 
 import 'package:music_palyer/bloc/bloc_provider.dart';
 import 'package:music_palyer/cubit/timer_cubit.dart';
@@ -10,12 +11,16 @@ import 'package:music_palyer/styles/color_manager.dart';
 import 'package:music_palyer/styles/style_manager.dart';
 
 import 'package:music_palyer/widget/custom_button_widget.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class DetailPage extends StatefulWidget {
-  final MusicModleState modle;
-  const DetailPage({Key? key, required this.modle}) : super(key: key);
+  final MusicModel model;
+  final MusicModel newmodel;
+
+  const DetailPage({Key? key, required this.model, required this.newmodel})
+      : super(key: key);
 
   @override
   _DetailPageState createState() => _DetailPageState();
@@ -26,7 +31,7 @@ class _DetailPageState extends State<DetailPage>
   late TimerCubit _timerCubit;
   late AudioPlayer _audioPlayer;
   late AnimationController _controller;
-  late MusicModleState modleState;
+  late MusicModel modelState;
   late BlocMusic _blocMusic;
 
   @override
@@ -34,14 +39,9 @@ class _DetailPageState extends State<DetailPage>
     super.initState();
     _timerCubit = BlocProvider.of<TimerCubit>(context);
     _blocMusic = BlocProvider.of<BlocMusic>(context);
-    modleState = widget.modle;
-    if (_blocMusic.audioPlayer.playerId == "Adnan") {
-      _audioPlayer = _blocMusic.audioPlayer;
-    } else {
-      _audioPlayer = AudioPlayer(playerId: "Adnan");
-      _blocMusic.audioPlayerSet = _audioPlayer;
-    }
-    // _blocMusic.nowPlayingSet = modleState;
+    _audioPlayer = _blocMusic.audioPlayer;
+    modelState = widget.model;
+    musicModelNew = modelState;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -50,36 +50,34 @@ class _DetailPageState extends State<DetailPage>
 
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
+  late MusicModel musicModelNew;
 
   @override
   void dispose() {
     super.dispose();
-    _blocMusic.audioPlayerSet = _audioPlayer;
-    _blocMusic.nowPlayingSet = _blocMusic.findById(modleState.id);
-
     _controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     _timerCubit.timer(_audioPlayer.onAudioPositionChanged);
-    if (_blocMusic.currentPlay == modleState &&
-        _blocMusic.audioPlayer.state == PlayerState.PLAYING) {
+    final isNowPlaying = _audioPlayer.state == PlayerState.PLAYING;
+    if (isNowPlaying && modelState == widget.newmodel) {
       setState(() {
         _isPlaying = true;
       });
       _controller.forward();
-    } else if (_blocMusic.currentPlay != modleState &&
-        _blocMusic.audioPlayer.state == PlayerState.PLAYING) {
-      _audioPlayer.play(modleState.path);
-      _blocMusic.nowPlayingSet = modleState;
+    } else if (isNowPlaying && modelState != widget.newmodel) {
+      _blocMusic.add(PlayMusic(widget.newmodel.id));
       setState(() {
         _isPlaying = true;
       });
       _controller.forward();
+      modelState = widget.newmodel;
+      musicModelNew = modelState;
+    } else {
+      musicModelNew = widget.newmodel;
     }
-
-    _blocMusic.audioPlayerSet = _audioPlayer;
     return Scaffold(
       backgroundColor: AppColor.mainColor,
       body: SafeArea(child: LayoutBuilder(builder: (context, contrains) {
@@ -120,13 +118,10 @@ class _DetailPageState extends State<DetailPage>
             const SizedBox(
               height: 10,
             ),
-            Hero(
-              tag: "ImageTag",
-              child: CustomButtonWidget(
-                image: "asset/image/flower.jpg",
-                size: contrains.maxHeight * 0.3,
-                borderWidth: 5,
-              ),
+            SizedBox(
+              width: 290,
+              height: 290,
+              child: Hero(tag: "ImageTag", child: musicModelNew.artworkWidget!),
             ),
             SizedBox(
               height: contrains.maxHeight * 0.075,
@@ -138,7 +133,7 @@ class _DetailPageState extends State<DetailPage>
                       horizontal: contrains.maxWidth * 0.048),
                   child: FittedBox(
                     child: Text(
-                      modleState.title,
+                      musicModelNew.title,
                       style: TextStyle(
                           color: AppColor.styleColor,
                           fontSize: MediaQuery.of(context).size.width < 420
@@ -152,7 +147,7 @@ class _DetailPageState extends State<DetailPage>
                 ),
                 FittedBox(
                   child: Text(
-                    modleState.artist,
+                    musicModelNew.artist,
                     style: TextStyle(
                         color: AppColor.styleColor.withOpacity(0.4),
                         fontSize:
@@ -170,33 +165,10 @@ class _DetailPageState extends State<DetailPage>
                     ),
                     BlocConsumer<TimerCubit, Duration>(
                         listener: (context, state) async {
-                      if (state.inSeconds ==
-                          await _audioPlayer.getDuration() ~/ 1000) {
-                        print("Complete");
-                        if (_blocMusic.isEnd(modleState.id)) {
-                          print("Is End");
-
-                          _duration = Duration.zero;
-                          setState(() {
-                            _isPlaying = false;
-                          });
-
-                          _audioPlayer.seek(_duration);
-                          _controller.reverse();
-                          _audioPlayer.stop();
-                          _blocMusic.audioPlayerSet = _audioPlayer;
-                        } else {
-                          final next = _blocMusic.playNext(modleState.id);
-                          await _audioPlayer.play(next.path);
-                          _blocMusic.nowPlayingSet = next;
-                          setState(() {
-                            modleState = next;
-                          });
-                        }
-                      }
+                      // if end play next or oneloop play again
                     }, builder: (context, state) {
                       _duration = state;
-                      if (modleState.id != _blocMusic.nowPlayingMusic.id) {
+                      if (modelState.id != widget.newmodel.id) {
                         _duration = Duration.zero;
                       }
 
@@ -208,7 +180,7 @@ class _DetailPageState extends State<DetailPage>
                       );
                     }),
                     Text(
-                        "${modleState.duration ~/ 60000 > 9 ? modleState.duration ~/ 60000 : '0' + (modleState.duration ~/ 60000).toString()}:${(modleState.duration ~/ 1000) % 60 > 9 ? (modleState.duration ~/ 1000) % 60 : '0' + (modleState.duration ~/ 1000 % 60).toString()}",
+                        "${musicModelNew.duration ~/ 60000 > 9 ? musicModelNew.duration ~/ 60000 : '0' + (musicModelNew.duration ~/ 60000).toString()}:${(musicModelNew.duration ~/ 1000) % 60 > 9 ? (musicModelNew.duration ~/ 1000) % 60 : '0' + (musicModelNew.duration ~/ 1000 % 60).toString()}",
                         style: getSubTitleStyle(
                             fontSize: 16, fontWeight: FontWeight.w400)),
                     const SizedBox(
@@ -230,7 +202,9 @@ class _DetailPageState extends State<DetailPage>
                             thumbRadius: 15,
                           ),
                           child: SfSlider(
-                            max: modleState.duration ~/ 1000,
+                            max: modelState.duration ~/ 1000 == 0
+                                ? musicModelNew.duration ~/ 1000
+                                : modelState.duration ~/ 1000,
                             min: 0,
                             value: _duration.inSeconds,
                             onChanged: (v) {
@@ -253,16 +227,11 @@ class _DetailPageState extends State<DetailPage>
                           child: IconButton(
                             onPressed: () async {
                               // Skip Previous Button...
-
-                              if (_blocMusic.isStart(modleState.id)) {
-                                return;
-                              }
-                              final previous =
-                                  _blocMusic.playPrevious(modleState.id);
-                              await _audioPlayer.play(previous.path);
-                              _blocMusic.nowPlayingSet = previous;
+                              // send event to bloc to previous
+                              _blocMusic
+                                  .add(SkipPreviousMusic(musicModelNew.id));
                               setState(() {
-                                modleState = previous;
+                                _isPlaying = true;
                               });
                             },
                             icon: const Icon(Icons.skip_previous),
@@ -277,21 +246,35 @@ class _DetailPageState extends State<DetailPage>
                               : 80,
                           child: IconButton(
                             onPressed: () async {
+                              // send event to bloc to play or pause
                               if (_blocMusic.audioPlayer.state ==
-                                  PlayerState.PLAYING) {
-                                await _audioPlayer.pause();
-
-                                setState(() {
-                                  _isPlaying = false;
-                                });
-                                _controller.reverse();
-                              } else {
-                                await _audioPlayer.play(modleState.path);
-
+                                  PlayerState.COMPLETED) {
+                                _blocMusic.add(PlayMusic(musicModelNew.id));
                                 setState(() {
                                   _isPlaying = true;
                                 });
                                 _controller.forward();
+                              } else if (musicModelNew != modelState) {
+                                _blocMusic.add(PlayMusic(musicModelNew.id));
+                                modelState = musicModelNew;
+                                setState(() {
+                                  _isPlaying = true;
+                                });
+                                _controller.forward();
+                              } else {
+                                _blocMusic.add(PauseResumeMusic());
+                                await Future.delayed(const Duration(
+                                    milliseconds:
+                                        300)); // this Future for complete progress and supply audio player true value
+                                setState(() {
+                                  _isPlaying = !_isPlaying;
+                                });
+
+                                if (_isPlaying) {
+                                  _controller.forward();
+                                } else {
+                                  _controller.reverse();
+                                }
                               }
                             },
                             icon: AnimatedIcon(
@@ -310,15 +293,9 @@ class _DetailPageState extends State<DetailPage>
                           child: IconButton(
                             onPressed: () async {
                               // Skip Next Button...
-                              if (_blocMusic.isEnd(modleState.id)) {
-                                return;
-                              }
-                              final next = _blocMusic.playNext(modleState.id);
-                              await _audioPlayer.play(next.path);
-                              _blocMusic.nowPlayingSet = next;
-                              setState(() {
-                                modleState = next;
-                              });
+                              // use bloc add event to go next
+                              _blocMusic
+                                  .add(SkipPreviousMusic(musicModelNew.id));
                             },
                             icon: const Icon(Icons.skip_next),
                           ),

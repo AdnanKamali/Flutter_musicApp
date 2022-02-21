@@ -1,29 +1,21 @@
-import 'package:audioplayers/audioplayers.dart';
-
 abstract class BlocEvent {}
+
+class PlayMusic extends BlocEvent {
+  final int musicId;
+
+  PlayMusic(this.musicId);
+}
 
 class SkipNextMusic extends BlocEvent {
   final int nextMusicId;
-  final AudioPlayer _audioPlayer;
-  SkipNextMusic(this.nextMusicId, this._audioPlayer) {
-    if (_audioPlayer.state != PlayerState.COMPLETED) {
-      _audioPlayer.stop();
-    }
-  }
+
+  SkipNextMusic(this.nextMusicId);
 }
 
 class SkipPreviousMusic extends BlocEvent {
   final int previousMusicId;
-  final AudioPlayer _audioPlayer;
-  SkipPreviousMusic(this.previousMusicId, this._audioPlayer) {
-    if (_audioPlayer.state != PlayerState.COMPLETED) {
-      _audioPlayer.stop();
-    }
-  }
+
+  SkipPreviousMusic(this.previousMusicId);
 }
 
-class NewMusicPlay extends BlocEvent {
-  final int id;
-
-  NewMusicPlay(this.id);
-}
+class PauseResumeMusic extends BlocEvent {}

@@ -7,6 +7,7 @@ import 'package:music_palyer/styles/color_manager.dart';
 import 'package:music_palyer/screen/list_page.dart';
 
 import 'package:music_palyer/bloc/music_model.dart';
+import 'package:music_palyer/widget/custom_button_widget.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 import 'bloc/music_model.dart';
@@ -40,26 +41,35 @@ class _MyAppState extends State<MyApp> {
   }
 
   void artistInfo() async {
-    final List<MusicModleState> musics = [];
+    final List<MusicModel> musics = [];
     final songs = await onAudioQuery.querySongs();
     for (var element in songs) {
       if (element.duration != null && element.duration != 0) {
-        final music = MusicModleState(
-          artist: element.artist!,
-          id: element.id,
-          path: element.data,
-          title: element.title,
-          duration: element.duration!,
-        );
+        final music = MusicModel(
+            artist: element.artist!,
+            id: element.id,
+            path: element.data,
+            title: element.title,
+            duration: element.duration!,
+            artworkWidget: QueryArtworkWidget(
+              id: element.id,
+              type: ArtworkType.AUDIO,
+              nullArtworkWidget: const CustomButtonWidget(
+                size: 150,
+                borderWidth: 5,
+                image: "asset/image/flower.jpg",
+              ),
+            ));
         musics.add(music);
         await Future.delayed(
             const Duration(microseconds: 10)); // this is for complete ui
       }
     }
-    provider.getListOfMusicModleState = musics;
+    provider.getListOfMusicModel = musics; // provider is bloc music
     setState(() {
       isLoading = false;
     });
+    print("End");
   }
 
   bool isLoading = true;
@@ -67,6 +77,7 @@ class _MyAppState extends State<MyApp> {
   // int result = 0;
   @override
   Widget build(BuildContext context) {
+    print(provider.musics.first.artworkWidget);
     return MaterialApp(
       title: "Music Player",
       home: isLoading
@@ -79,7 +90,8 @@ class _MyAppState extends State<MyApp> {
           : ListPage(
               musics: provider.musics.isEmpty
                   ? ([
-                      MusicModleState(
+                      MusicModel(
+                          artworkWidget: null,
                           artist: "Not Found",
                           id: 0,
                           duration: 0,

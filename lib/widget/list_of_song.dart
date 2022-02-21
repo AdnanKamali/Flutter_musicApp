@@ -3,21 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_event.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
+import 'package:music_palyer/bloc/music_model.dart';
 import 'package:music_palyer/screen/detail_page.dart';
-import 'package:music_palyer/screen/list_page.dart';
+
 import 'package:music_palyer/styles/style_manager.dart';
 import 'custom_button_widget.dart';
 import '../styles/color_manager.dart';
 
 class ListOfSong extends StatefulWidget {
-  final String id;
-  const ListOfSong({
-    Key? key,
-    required this.widget,
-    required this.id,
-  }) : super(key: key);
-
-  final ListPage widget;
+  final MusicModel? currentPlayMusic;
+  const ListOfSong({Key? key, this.currentPlayMusic}) : super(key: key);
 
   @override
   State<ListOfSong> createState() => _ListOfSongState();
@@ -27,11 +22,11 @@ class _ListOfSongState extends State<ListOfSong>
     with SingleTickerProviderStateMixin {
   int _id = 0;
   late AnimationController _controller;
-  late AudioPlayer _audioPlayer;
+  // late AudioPlayer _audioPlayer;
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer(playerId: "Adnan");
+    // _audioPlayer = AudioPlayer(playerId: "Adnan");
     _controller = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 400));
   }
@@ -45,12 +40,15 @@ class _ListOfSongState extends State<ListOfSong>
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<BlocMusic>(context);
+
     if (bloc.audioPlayer.state == PlayerState.PLAYING) {
-      _id = bloc.currentPlay.id;
+      _id = widget.currentPlayMusic!.id;
       _controller.forward();
     } else {
       _id = 0;
+      _controller.reverse();
     }
+
     return ListView.builder(
         physics: const BouncingScrollPhysics(),
         itemCount: bloc.musics.length,
@@ -65,21 +63,17 @@ class _ListOfSongState extends State<ListOfSong>
             padding: const EdgeInsets.all(16),
             child: InkWell(
               onTap: () {
-                if (_audioPlayer.state == PlayerState.PLAYING) {
-                  bloc.audioPlayerSet = _audioPlayer;
-                }
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (c) {
-                      bloc.add(NewMusicPlay(bloc.musics[index].id));
+                      // event play
                       return DetailPage(
-                        modle: bloc.musics[index],
+                        model: widget.currentPlayMusic!,
+                        newmodel: bloc.musics[index],
                       );
                     },
                   ),
-                ).then((value) {
-                  setState(() {}); // update widgets
-                });
+                );
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -107,47 +101,34 @@ class _ListOfSongState extends State<ListOfSong>
                   CustomButtonWidget(
                     isOnPressed: _id == bloc.musics[index].id,
                     child: IconButton(
-                      icon: _id == bloc.musics[index].id
-                          ? AnimatedIcon(
-                              progress: _controller,
-                              icon: AnimatedIcons.play_pause,
-                              color: _id == bloc.musics[index].id
-                                  ? Colors.white
-                                  : AppColor.styleColor,
-                            )
-                          : const Icon(Icons.play_arrow),
-                      onPressed: () async {
-                        if (bloc.currentPlay != bloc.musics[index]) {
-                          setState(() {
-                            bloc.nowPlayingSet = bloc.musics[index];
-                          });
-                          await _audioPlayer.play(bloc.musics[index].path);
-                          _controller.forward();
-                          setState(() {
-                            _id = bloc.currentPlay.id;
-                          });
-                        } else if (bloc.currentPlay == bloc.musics[index] &&
-                            _audioPlayer.state == PlayerState.PLAYING) {
-                          await _audioPlayer.pause();
-                          Future.delayed(_controller.duration!).then(
-                            (value) {
+                        icon: _id == bloc.musics[index].id
+                            ? AnimatedIcon(
+                                progress: _controller,
+                                icon: AnimatedIcons.play_pause,
+                                color: _id == widget.currentPlayMusic!.id
+                                    ? Colors.white
+                                    : AppColor.styleColor,
+                              )
+                            : const Icon(Icons.play_arrow),
+                        onPressed: () async {
+                          // change with event
+                          if (bloc.audioPlayer.state != PlayerState.PLAYING) {
+                            bloc.add(PlayMusic(bloc.musics[index].id));
+                            _controller.forward();
+                          } else if (bloc.audioPlayer.state ==
+                                  PlayerState.PLAYING &&
+                              widget.currentPlayMusic != bloc.musics[index]) {
+                            bloc.add(PlayMusic(bloc.musics[index].id));
+                          } else {
+                            bloc.add(PauseResumeMusic());
+                            _controller.reverse();
+                            Future.delayed(_controller.duration!).then((value) {
                               setState(() {
                                 _id = 0;
                               });
-                            },
-                          ); // Future for hamahang animation
-                          _controller.reverse();
-                        } else if (bloc.currentPlay == bloc.musics[index] &&
-                            _audioPlayer.state != PlayerState.PLAYING) {
-                          await _audioPlayer.play(bloc.musics[index].path);
-                          setState(() {
-                            _id = bloc.currentPlay.id;
-                          });
-                          _controller.forward();
-                        }
-                        bloc.audioPlayerSet = _audioPlayer;
-                      },
-                    ),
+                            });
+                          }
+                        }),
                   ),
                 ],
               ),

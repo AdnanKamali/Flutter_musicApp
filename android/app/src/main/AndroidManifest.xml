@@ -3,7 +3,7 @@
    <application
         android:usesCleartextTraffic="true"
         android:requestLegacyExternalStorage="true"
-        android:label="music_palyer"
+        android:label="@string/AppName"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
