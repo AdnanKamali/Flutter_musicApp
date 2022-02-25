@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music_palyer/bloc/bloc_event.dart';
 import 'package:music_palyer/bloc/bloc_provider.dart';
-import 'package:music_palyer/bloc/music_model.dart';
+import 'package:music_palyer/model/music_model.dart';
 import 'package:music_palyer/screen/detail_page.dart';
 
 import 'package:music_palyer/styles/style_manager.dart';
@@ -41,14 +41,6 @@ class _ListOfSongState extends State<ListOfSong>
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<BlocMusic>(context);
 
-    if (bloc.audioPlayer.state == PlayerState.PLAYING) {
-      _id = widget.currentPlayMusic!.id;
-      _controller.forward();
-    } else {
-      _id = 0;
-      _controller.reverse();
-    }
-
     return ListView.builder(
         physics: const BouncingScrollPhysics(),
         itemCount: bloc.musics.length,
@@ -73,7 +65,17 @@ class _ListOfSongState extends State<ListOfSong>
                       );
                     },
                   ),
-                );
+                ).then((value) {
+                  setState(() {
+                    if (bloc.audioPlayer.state == PlayerState.PLAYING) {
+                      _id = widget.currentPlayMusic!.id;
+                      _controller.forward();
+                    } else {
+                      _controller.reverse();
+                      _id = 0;
+                    }
+                  });
+                });
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -114,14 +116,23 @@ class _ListOfSongState extends State<ListOfSong>
                           // change with event
                           if (bloc.audioPlayer.state != PlayerState.PLAYING) {
                             bloc.add(PlayMusic(bloc.musics[index].id));
+
                             _controller.forward();
+                            setState(() {
+                              _id = bloc.musics[index].id;
+                            });
                           } else if (bloc.audioPlayer.state ==
                                   PlayerState.PLAYING &&
                               widget.currentPlayMusic != bloc.musics[index]) {
                             bloc.add(PlayMusic(bloc.musics[index].id));
+                            _controller.forward();
+                            setState(() {
+                              _id = bloc.musics[index].id;
+                            });
                           } else {
-                            bloc.add(PauseResumeMusic());
+                            // print("Controller");
                             _controller.reverse();
+                            bloc.add(PauseResumeMusic());
                             Future.delayed(_controller.duration!).then((value) {
                               setState(() {
                                 _id = 0;

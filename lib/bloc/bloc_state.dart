@@ -1,4 +1,4 @@
-import 'package:music_palyer/bloc/music_model.dart';
+import 'package:music_palyer/model/music_model.dart';
 
 class BlocState {
   final MusicModel modelState;

@@ -2,19 +2,15 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:bloc/bloc.dart';
 import 'package:music_palyer/bloc/bloc_state.dart';
 import 'bloc_event.dart';
-import 'music_model.dart';
+import '../model/music_model.dart';
 
 class BlocMusic extends Bloc<BlocEvent, BlocState> {
   List<MusicModel> _model = [];
-  AudioPlayer _audioPlayer = AudioPlayer(playerId: "Base");
+  final AudioPlayer _audioPlayer = AudioPlayer(playerId: "Base");
 
   bool _isOneLoopPlaying = false;
   set getListOfMusicModel(List<MusicModel> musics) {
     _model = musics;
-  }
-
-  set audioPlayerSet(AudioPlayer audioPlayer) {
-    _audioPlayer = audioPlayer;
   }
 
   AudioPlayer get audioPlayer {
@@ -78,28 +74,50 @@ class BlocMusic extends Bloc<BlocEvent, BlocState> {
     _isOneLoopPlaying = isOneLoopPlayingArg;
   }
 
+  bool get isOneLoopPlaying {
+    return _isOneLoopPlaying;
+  }
+
+  void _whenCompleteMusic() {
+    _audioPlayer.onPlayerCompletion.listen((event) {
+      if (_isOneLoopPlaying) {
+        add(PlayMusic(state.modelState.id));
+      } else {
+        add(StopMusic());
+      }
+    });
+  }
+
   BlocMusic() : super(BlocState(MusicModel.first())) {
     on<BlocEvent>((event, emit) async {
       if (event is SkipNextMusic) {
         final playingThisMusic =
             _model[findIndex(event.nextMusicId) + 1]; // next music
+
         await _audioPlayer.play(playingThisMusic.path, isLocal: true);
         emit(BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
       } else if (event is SkipPreviousMusic) {
         final playingThisMusic =
             _model[findIndex(event.previousMusicId) - 1]; // previous music
+
         await _audioPlayer.play(playingThisMusic.path);
         emit(BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
       } else if (event is PlayMusic) {
-        await _audioPlayer.play(findById(event.musicId).path, isLocal: true);
-        emit(BlocState(findById(event.musicId),
-            isOneLoopPlaying: _isOneLoopPlaying));
+        final readyToPlayMusic = findById(event.musicId);
+
+        await _audioPlayer.play(readyToPlayMusic.path, isLocal: true);
+        _whenCompleteMusic();
+        emit(BlocState(readyToPlayMusic, isOneLoopPlaying: _isOneLoopPlaying));
       } else if (event is PauseResumeMusic) {
         if (_audioPlayer.state == PlayerState.PAUSED) {
           await _audioPlayer.resume();
+          _whenCompleteMusic();
         } else {
           await _audioPlayer.pause();
         }
+        emit(BlocState(state.modelState));
+      } else {
+        await _audioPlayer.stop();
         emit(BlocState(state.modelState));
       }
     });

@@ -1,16 +1,19 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:audiotagger/audiotagger.dart';
 import 'package:audioplayers/audioplayers.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music_palyer/bloc/bloc_provider.dart';
-import 'package:music_palyer/cubit/timer_cubit.dart';
-import 'package:music_palyer/styles/color_manager.dart';
-import 'package:music_palyer/screen/list_page.dart';
-
-import 'package:music_palyer/bloc/music_model.dart';
-import 'package:music_palyer/widget/custom_button_widget.dart';
+// import 'package:id3/id3.dart';
+import '/bloc/bloc_provider.dart';
+import '/cubit/timer_cubit.dart';
+import '/styles/color_manager.dart';
+import '/screen/list_page.dart';
+import 'model/music_model.dart';
+import '/widget/custom_button_widget.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-import 'bloc/music_model.dart';
+import 'model/music_model.dart';
 
 void main() => runApp(MultiBlocProvider(
       providers: [
@@ -41,25 +44,19 @@ class _MyAppState extends State<MyApp> {
   }
 
   void artistInfo() async {
+    Audiotagger audiotagger = Audiotagger();
     final List<MusicModel> musics = [];
     final songs = await onAudioQuery.querySongs();
     for (var element in songs) {
       if (element.duration != null && element.duration != 0) {
+        final artWork = await audiotagger.readArtwork(path: element.data);
         final music = MusicModel(
             artist: element.artist!,
             id: element.id,
             path: element.data,
             title: element.title,
             duration: element.duration!,
-            artworkWidget: QueryArtworkWidget(
-              id: element.id,
-              type: ArtworkType.AUDIO,
-              nullArtworkWidget: const CustomButtonWidget(
-                size: 150,
-                borderWidth: 5,
-                image: "asset/image/flower.jpg",
-              ),
-            ));
+            artworkWidget: artWork != null ? Image.memory(artWork) : null);
         musics.add(music);
         await Future.delayed(
             const Duration(microseconds: 10)); // this is for complete ui
@@ -69,7 +66,6 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       isLoading = false;
     });
-    print("End");
   }
 
   bool isLoading = true;
@@ -77,7 +73,6 @@ class _MyAppState extends State<MyApp> {
   // int result = 0;
   @override
   Widget build(BuildContext context) {
-    print(provider.musics.first.artworkWidget);
     return MaterialApp(
       title: "Music Player",
       home: isLoading

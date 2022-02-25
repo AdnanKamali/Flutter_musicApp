@@ -19,3 +19,5 @@ class SkipPreviousMusic extends BlocEvent {
 }
 
 class PauseResumeMusic extends BlocEvent {}
+
+class StopMusic extends BlocEvent {}

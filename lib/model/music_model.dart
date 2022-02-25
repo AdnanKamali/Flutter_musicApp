@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 class MusicModel {
@@ -7,7 +8,7 @@ class MusicModel {
   final String path;
   final int duration;
   final String artist;
-  final QueryArtworkWidget? artworkWidget;
+  final Image? artworkWidget;
   MusicModel.first({
     this.artworkWidget,
     this.artist = "",

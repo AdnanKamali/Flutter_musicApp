@@ -40,6 +40,8 @@ dependencies:
   syncfusion_flutter_sliders: ^19.4.48
   flutter_bloc: ^8.0.1
   on_audio_query: ^2.6.0
+  id3: ^1.0.2
+  audiotagger: ^2.2.1
 
 
 dev_dependencies:

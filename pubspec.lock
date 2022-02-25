@@ -15,6 +15,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.20.1"
+  audiotagger:
+    dependency: "direct main"
+    description:
+      name: audiotagger
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.1"
   bloc:
     dependency: "direct main"
     description:
@@ -136,7 +143,7 @@ packages:
     source: hosted
     version: "4.0.0"
   id3:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: id3
       url: "https://pub.dartlang.org"

@@ -6,7 +6,7 @@ import 'package:music_palyer/bloc/bloc_state.dart';
 import 'package:music_palyer/screen/detail_page.dart';
 import 'package:music_palyer/styles/style_manager.dart';
 import 'package:music_palyer/widget/custom_button_widget.dart';
-import 'package:music_palyer/bloc/music_model.dart';
+import 'package:music_palyer/model/music_model.dart';
 import 'package:music_palyer/styles/color_manager.dart';
 import 'package:music_palyer/widget/list_of_song.dart';
 
@@ -71,8 +71,12 @@ class _ListPageState extends State<ListPage> {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(builder: (c) {
                                     return DetailPage(
-                                      model: state.modelState,
-                                      newmodel: state.modelState,
+                                      model: state.modelState.title.isEmpty
+                                          ? bloc.musics[0]
+                                          : state.modelState,
+                                      newmodel: state.modelState.title.isEmpty
+                                          ? bloc.musics[0]
+                                          : state.modelState,
                                     );
                                   }),
                                 );
@@ -88,7 +92,10 @@ class _ListPageState extends State<ListPage> {
                                     borderWidth: 5,
                                     image: "asset/image/flower.jpg",
                                   )
-                                : state.modelState.artworkWidget!,
+                                : ClipRRect(
+                                    child: state.modelState.artworkWidget!,
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
                           ),
                         ),
                       ),
@@ -118,10 +125,15 @@ class _ListPageState extends State<ListPage> {
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                height: 10,
+                child: const Text(
+                  "Powered by Adnan",
+                  style: TextStyle(color: AppColor.styleColor),
+                ),
+                height: 20,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [
                     AppColor.mainColor.withOpacity(0),
+                    AppColor.mainColor.withOpacity(0.75),
                     AppColor.mainColor
                   ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
                 ),
