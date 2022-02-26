@@ -1,19 +1,13 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:audiotagger/audiotagger.dart';
 import 'package:audioplayers/audioplayers.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:id3/id3.dart';
 import '/bloc/bloc_provider.dart';
 import '/cubit/timer_cubit.dart';
-import '/styles/color_manager.dart';
 import '/screen/list_page.dart';
 import 'model/music_model.dart';
-import '/widget/custom_button_widget.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-
-import 'model/music_model.dart';
+import 'resource/styles/color_manager.dart';
 
 void main() => runApp(MultiBlocProvider(
       providers: [
