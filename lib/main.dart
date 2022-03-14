@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audiotagger/audiotagger.dart';
 import 'package:audioplayers/audioplayers.dart';
 import "package:flutter/material.dart";
@@ -32,12 +34,12 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     onAudioQuery = OnAudioQuery();
-    artistInfo();
+    _getMusicsFromStorage();
     provider = BlocProvider.of<BlocMusic>(context);
     audioPlayer = AudioPlayer();
   }
 
-  void artistInfo() async {
+  void _getMusicsFromStorage() async {
     Audiotagger audiotagger = Audiotagger();
     final List<MusicModel> musics = [];
     final songs = await onAudioQuery.querySongs();
@@ -64,7 +66,6 @@ class _MyAppState extends State<MyApp> {
 
   bool isLoading = true;
 
-  // int result = 0;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

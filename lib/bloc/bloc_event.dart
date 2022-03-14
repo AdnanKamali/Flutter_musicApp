@@ -1,3 +1,5 @@
+import 'package:music_palyer/model/music_model.dart';
+
 abstract class BlocEvent {}
 
 class PlayMusic extends BlocEvent {
@@ -21,3 +23,8 @@ class SkipPreviousMusic extends BlocEvent {
 class PauseResumeMusic extends BlocEvent {}
 
 class StopMusic extends BlocEvent {}
+
+class SetValue extends BlocEvent {
+  final MusicModel musicModel;
+  SetValue(this.musicModel);
+}

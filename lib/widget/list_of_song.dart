@@ -72,7 +72,9 @@ class _ListOfSongState extends State<ListOfSong>
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (c) {
-                        // event play
+                        bloc.add(
+                          SetValue(bloc.musics[index]),
+                        );
                         return DetailPage(
                           model: widget.currentPlayMusic!,
                           newModel: _muicIndex,

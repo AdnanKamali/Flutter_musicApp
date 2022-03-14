@@ -1,14 +1,13 @@
 import 'package:flutter/cupertino.dart';
-import 'package:on_audio_query/on_audio_query.dart';
 
 class MusicModel {
   final int id;
-
   final String title;
   final String path;
   final int duration;
   final String artist;
   final Image? artworkWidget;
+  bool isFavorite;
   MusicModel.first({
     this.artworkWidget,
     this.artist = "",
@@ -16,6 +15,7 @@ class MusicModel {
     this.id = 0,
     this.path = "",
     this.title = "",
+    this.isFavorite = false,
   });
   MusicModel({
     required this.artworkWidget,
@@ -24,5 +24,9 @@ class MusicModel {
     required this.path,
     required this.title,
     required this.duration,
+    this.isFavorite = false,
   });
+  void favoriteMusic() {
+    isFavorite = !isFavorite;
+  }
 }

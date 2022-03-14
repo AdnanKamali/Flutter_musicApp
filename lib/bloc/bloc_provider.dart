@@ -91,17 +91,23 @@ class BlocMusic extends Bloc<BlocEvent, BlocState> {
   BlocMusic() : super(BlocState(MusicModel.first())) {
     on<BlocEvent>((event, emit) async {
       if (event is SkipNextMusic) {
-        final playingThisMusic =
-            _model[findIndex(event.nextMusicId) + 1]; // next music
+        if (!isEnd(event.nextMusicId)) {
+          final playingThisMusic =
+              _model[findIndex(event.nextMusicId) + 1]; // next music
 
-        await _audioPlayer.play(playingThisMusic.path, isLocal: true);
-        emit(BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
+          await _audioPlayer.play(playingThisMusic.path, isLocal: true);
+          emit(
+              BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
+        }
       } else if (event is SkipPreviousMusic) {
-        final playingThisMusic =
-            _model[findIndex(event.previousMusicId) - 1]; // previous music
+        if (!isStart(event.previousMusicId)) {
+          final playingThisMusic =
+              _model[findIndex(event.previousMusicId) - 1]; // previous music
 
-        await _audioPlayer.play(playingThisMusic.path);
-        emit(BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
+          await _audioPlayer.play(playingThisMusic.path);
+          emit(
+              BlocState(playingThisMusic, isOneLoopPlaying: _isOneLoopPlaying));
+        }
       } else if (event is PlayMusic) {
         final readyToPlayMusic = findById(event.musicId);
 
@@ -116,6 +122,8 @@ class BlocMusic extends Bloc<BlocEvent, BlocState> {
           await _audioPlayer.pause();
         }
         emit(BlocState(state.modelState));
+      } else if (event is SetValue) {
+        emit(BlocState(event.musicModel));
       } else {
         await _audioPlayer.stop();
         emit(BlocState(state.modelState));

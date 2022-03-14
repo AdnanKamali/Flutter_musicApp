@@ -20,6 +20,7 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import '../resource/styles/color_manager.dart';
 import '../resource/styles/style_manager.dart';
 
+// fixed bug when run app
 class DetailPage extends StatefulWidget {
   final MusicModel model;
   final MusicModel newModel;
@@ -44,6 +45,7 @@ class _DetailPageState extends State<DetailPage>
     _timerCubit = BlocProvider.of<TimerCubit>(context);
     _blocMusic = BlocProvider.of<BlocMusic>(context);
     modelState = widget.model;
+    maxDuration = widget.newModel.duration;
     musicModelNew = modelState;
 
     _controller = AnimationController(
@@ -52,6 +54,7 @@ class _DetailPageState extends State<DetailPage>
     );
   }
 
+  late int maxDuration;
   Duration _duration = Duration.zero;
   bool _isPlaying = false;
   late MusicModel musicModelNew;
@@ -88,119 +91,120 @@ class _DetailPageState extends State<DetailPage>
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, contrains) {
-            return Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(contrains.maxHeight * 0.010),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CustomButtonWidget(
-                        child: IconButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          icon: const Icon(
-                            Icons.arrow_back,
-                            color: AppColor.styleColor,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        StringManager.titleOfDetailPage,
-                        style: getTitileStyle(fontWeight: FontWeight.w300),
-                      ),
-                      const CustomButtonWidget(
-                        child: IconButton(
-                          onPressed: null, // I wll Upadate
-                          icon: Icon(
-                            Icons.menu,
-                            color: AppColor.styleColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                SizedBox(
-                  width: contrains.maxHeight * 0.35,
-                  height: contrains.maxHeight * 0.35,
-                  child: ImageMusicShow(
-                    imageOfMusic: musicModelNew.artworkWidget,
-                    size: 230,
-                  ),
-                ),
-                SizedBox(
-                  height: contrains.maxHeight * 0.040,
-                ),
-                Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: contrains.maxWidth * 0.048),
-                      child: FittedBox(
-                        child: Text(
-                          musicModelNew.title,
-                          style: getTitileStyle(fontSize: 20),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: contrains.maxHeight * 0.01,
-                    ),
-                    FittedBox(
-                      child: Text(
-                        musicModelNew.artist,
-                        style: getSubTitleStyle(),
-                      ),
-                    ),
-                    SizedBox(
-                      height: contrains.maxHeight * 0.020,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+            return BlocConsumer<BlocMusic, BlocState>(
+              listener: ((context, stateBlocMusic) {
+                maxDuration = stateBlocMusic.modelState.duration;
+              }),
+              builder: (c, state) => Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(contrains.maxHeight * 0.010),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: contrains.maxWidth * 0.05,
+                        CustomButtonWidget(
+                          child: IconButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: AppColor.styleColor,
+                            ),
+                          ),
                         ),
-                        BlocConsumer<TimerCubit, Duration>(
-                            listener: (context, state) async {},
-                            builder: (context, state) {
-                              _duration = state;
-                              if (modelState.id != widget.newModel.id) {
-                                _duration = Duration.zero;
-                              }
-                              return Expanded(
-                                child: Text(
-                                  "${_duration.inMinutes > 9 ? _duration.inMinutes : '0' + _duration.inMinutes.toString()}:${_duration.inSeconds % 60 > 9 ? _duration.inSeconds % 60 : '0' + (_duration.inSeconds % 60).toString()}",
-                                  style: getSubTitleStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400),
-                                ),
-                              );
-                            }),
                         Text(
-                            "${musicModelNew.duration ~/ 60000 > 9 ? musicModelNew.duration ~/ 60000 : '0' + (musicModelNew.duration ~/ 60000).toString()}:${(musicModelNew.duration ~/ 1000) % 60 > 9 ? (musicModelNew.duration ~/ 1000) % 60 : '0' + (musicModelNew.duration ~/ 1000 % 60).toString()}",
-                            style: getSubTitleStyle(
-                                fontSize: 12, fontWeight: FontWeight.w400)),
-                        SizedBox(
-                          width: contrains.maxWidth * 0.05,
+                          StringManager.titleOfDetailPage,
+                          style: getTitileStyle(fontWeight: FontWeight.w300),
+                        ),
+                        CustomButtonWidget(
+                          isOnPressed: musicModelNew.isFavorite,
+                          child: IconButton(
+                            onPressed: () {
+                              musicModelNew.favoriteMusic();
+                              setState(() {});
+                            }, // I wll Upadate
+                            icon: const Icon(
+                              Icons.favorite,
+                              color: AppColor.styleColor,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    BlocConsumer<TimerCubit, Duration>(
-                        listener: (context, state) {},
-                        builder: (context, state) {
-                          return _musicSeekTime(context);
-                        }),
-                    _playButtonsAction(),
-                  ],
-                ),
-                _loopButton()
-              ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    width: contrains.maxHeight * 0.35,
+                    height: contrains.maxHeight * 0.35,
+                    child: ImageMusicShow(
+                      imageOfMusic: state.modelState.artworkWidget,
+                      size: 230,
+                    ),
+                  ),
+                  SizedBox(
+                    height: contrains.maxHeight * 0.040,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: contrains.maxWidth * 0.048),
+                    child: Text(
+                      state.modelState.title,
+                      style: getTitileStyle(fontSize: 20),
+                    ),
+                  ),
+                  SizedBox(
+                    height: contrains.maxHeight * 0.01,
+                  ),
+                  Text(
+                    state.modelState.artist,
+                    style: getSubTitleStyle(),
+                  ),
+                  SizedBox(
+                    height: contrains.maxHeight * 0.020,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: contrains.maxWidth * 0.05,
+                      ),
+                      BlocConsumer<TimerCubit, Duration>(
+                          listener: (context, state) async {},
+                          builder: (context, state) {
+                            _duration = state;
+                            if (modelState.id != widget.newModel.id) {
+                              _duration = Duration.zero;
+                            }
+                            return Expanded(
+                              child: Text(
+                                "${_duration.inMinutes > 9 ? _duration.inMinutes : '0' + _duration.inMinutes.toString()}:${_duration.inSeconds % 60 > 9 ? _duration.inSeconds % 60 : '0' + (_duration.inSeconds % 60).toString()}",
+                                style: getSubTitleStyle(
+                                    fontSize: 12, fontWeight: FontWeight.w400),
+                              ),
+                            );
+                          }),
+                      Text(
+                          "${state.modelState.duration ~/ 60000 > 9 ? state.modelState.duration ~/ 60000 : '0' + (state.modelState.duration ~/ 60000).toString()}:${(state.modelState.duration ~/ 1000) % 60 > 9 ? (state.modelState.duration ~/ 1000) % 60 : '0' + (state.modelState.duration ~/ 1000 % 60).toString()}",
+                          style: getSubTitleStyle(
+                              fontSize: 12, fontWeight: FontWeight.w400)),
+                      SizedBox(
+                        width: contrains.maxWidth * 0.05,
+                      ),
+                    ],
+                  ),
+                  BlocConsumer<TimerCubit, Duration>(
+                      listener: (context, state) {},
+                      builder: (context, state) {
+                        return _musicSeekTime(context,
+                            maxDuration: maxDuration);
+                      }),
+                  _playButtonsAction(state.modelState.id),
+                  _loopButton()
+                ],
+              ),
             );
           },
         ),
@@ -208,7 +212,7 @@ class _DetailPageState extends State<DetailPage>
     );
   }
 
-  Widget _playButtonsAction() {
+  Widget _playButtonsAction(int id) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 25),
       child: Row(
@@ -219,7 +223,7 @@ class _DetailPageState extends State<DetailPage>
             size: 70,
             child: IconButton(
               onPressed: () async {
-                _blocMusic.add(SkipPreviousMusic(musicModelNew.id));
+                _blocMusic.add(SkipPreviousMusic(id));
                 setState(() {
                   _isPlaying = true;
                 });
@@ -247,14 +251,14 @@ class _DetailPageState extends State<DetailPage>
                 onPressed: () async {
                   // send event to bloc to play or pause
                   if (_blocMusic.audioPlayer.state == PlayerState.COMPLETED) {
-                    _blocMusic.add(PlayMusic(musicModelNew.id));
+                    _blocMusic.add(PlayMusic(id));
 
                     setState(() {
                       _isPlaying = true;
                     });
                     _controller.forward();
                   } else if (musicModelNew != modelState) {
-                    _blocMusic.add(PlayMusic(musicModelNew.id));
+                    _blocMusic.add(PlayMusic(id));
                     modelState = musicModelNew;
 
                     setState(() {
@@ -263,7 +267,7 @@ class _DetailPageState extends State<DetailPage>
                     _controller.forward();
                   } else if (_blocMusic.audioPlayer.state ==
                       PlayerState.STOPPED) {
-                    _blocMusic.add(PlayMusic(musicModelNew.id));
+                    _blocMusic.add(PlayMusic(id));
                     setState(() {
                       _isPlaying = true;
                     });
@@ -298,7 +302,7 @@ class _DetailPageState extends State<DetailPage>
             size: 70,
             child: IconButton(
               onPressed: () async {
-                _blocMusic.add(SkipPreviousMusic(musicModelNew.id));
+                _blocMusic.add(SkipNextMusic(id));
               },
               icon: const Icon(Icons.skip_next),
             ),
@@ -329,7 +333,7 @@ class _DetailPageState extends State<DetailPage>
     );
   }
 
-  SfSliderTheme _musicSeekTime(BuildContext context) {
+  SfSliderTheme _musicSeekTime(BuildContext context, {int? maxDuration}) {
     return SfSliderTheme(
       data: SfSliderTheme.of(context).copyWith(
         thumbStrokeWidth: 8,
@@ -340,9 +344,7 @@ class _DetailPageState extends State<DetailPage>
         thumbRadius: 15,
       ),
       child: SfSlider(
-        max: modelState.duration ~/ 1000 == 0
-            ? musicModelNew.duration ~/ 1000
-            : modelState.duration ~/ 1000,
+        max: Duration(milliseconds: maxDuration!).inSeconds,
         min: 0,
         value: _duration.inSeconds,
         onChanged: (v) {
